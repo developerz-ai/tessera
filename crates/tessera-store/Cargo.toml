@@ -1,0 +1,18 @@
+[package]
+name = "tessera-store"
+description = "Stores: in-memory and SQLite, schema and checked migration generation (spec §7)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true
+tessera-interp.workspace = true

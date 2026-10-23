@@ -1,0 +1,15 @@
+[package]
+name = "tessera-ir"
+description = "Typed Core IR: the only input to interpreter, verifier and lowering (spec §9)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]

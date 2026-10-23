@@ -1,0 +1,18 @@
+[package]
+name = "tessera-check"
+description = "Name resolution, types, refinements, exhaustiveness; lowers AST to Core IR (spec §3)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true
+tessera-syntax.workspace = true

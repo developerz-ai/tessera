@@ -1,0 +1,14 @@
+/target/
+/tmp/
+**/*.rs.bk
+*.log
+*.tmp
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+# Tessera build outputs and local package store (spec §8)
+*.tes.cache
+/.tessera/

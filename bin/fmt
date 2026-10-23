@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Format everything. The only formatting decision anyone makes is running this.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+cargo fmt --all

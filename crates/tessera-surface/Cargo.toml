@@ -1,0 +1,19 @@
+[package]
+name = "tessera-surface"
+description = "Surfaces: cli and http wiring from surface declarations to rule calls (spec §7)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true
+tessera-interp.workspace = true
+tessera-store.workspace = true

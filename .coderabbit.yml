@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Review instructions are the conventions a test cannot check. tone_instructions max 250 chars.
+language: "en-US"
+tone_instructions: >-
+  Terse and concrete. Cite CLAUDE.md or the spec section. Block invented spec semantics,
+  nondeterminism, unsound proofs, and diagnostics without a stable code or --json form.
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: true
+  path_filters:
+    - "!target/**"
+    - "!Cargo.lock"
+  path_instructions:
+    - path: "crates/**/*.rs"
+      instructions: >-
+        No unwrap/expect/panic outside tests. No HashMap/HashSet iteration reaching output, IR,
+        hashes or diagnostics. Errors are typed and map to stable E-<AREA>-NNN codes.
+        Imports only to lower tiers (CLAUDE.md "Crate tiers").
+    - path: "crates/tessera-verify/**"
+      instructions: >-
+        Soundness first: Unknown/timeout must never become Proven; fast mode may miss violations
+        but must never report a proof.
+    - path: "docs/spec/**"
+      instructions: >-
+        Normative text. Flag ambiguity, contradictions with other sections, and any change that
+        isn't reflected in open-questions.md or the corpus.
+    - path: "corpus/**"
+      instructions: >-
+        Ground truth. Flag syntax that depends on an open question in docs/spec/open-questions.md.

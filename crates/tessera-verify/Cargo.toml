@@ -1,0 +1,17 @@
+[package]
+name = "tessera-verify"
+description = "Verifier: SMT encoding of laws, counterexamples, fast and full modes (spec §10)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true

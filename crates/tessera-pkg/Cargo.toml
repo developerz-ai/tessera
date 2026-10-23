@@ -1,0 +1,18 @@
+[package]
+name = "tessera-pkg"
+description = "Hash normalization, content store, lockfile, git-native packages, audit (spec §8, packages.md)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true
+tessera-syntax.workspace = true

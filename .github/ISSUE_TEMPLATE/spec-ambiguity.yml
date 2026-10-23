@@ -1,0 +1,37 @@
+name: 📐 Spec ambiguity
+description: The spec is silent, contradicts itself, or allows more than one reading.
+title: "spec(§N): "
+labels: ["spec:ambiguity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Swarm rule (spec §13): ambiguity is filed, never guessed. Check
+        [open-questions.md](https://github.com/developerz-ai/tessera/blob/main/docs/spec/open-questions.md) first.
+  - type: input
+    id: section
+    attributes:
+      label: Spec section
+      placeholder: "§2 Lexical rules and grammar"
+    validations:
+      required: true
+  - type: textarea
+    id: quote
+    attributes:
+      label: The spec text
+      description: Quote the lines that are silent or conflict.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: readings
+    attributes:
+      label: Possible readings
+      description: Each with a short Tessera example showing the difference.
+    validations:
+      required: true
+  - type: textarea
+    id: blocks
+    attributes:
+      label: What it blocks
+      description: Which work package, frozen interface or corpus case.

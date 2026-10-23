@@ -1,0 +1,21 @@
+# Tessera
+
+> A declarative, deterministic language for the logic layer of applications. You declare types, rules and laws; the compiler derives the implementation and proves the laws with an SMT solver or returns a concrete counterexample. Same state and inputs give the same outputs, bit for bit, on every backend; the interpreter is the semantic oracle. Toolchain in Rust: one Cargo workspace, one crate per work package, the `tessera` binary. Status: pre-M0 — spec and scaffold, nothing parses yet. `As of 2026-10-22`.
+
+## Resolve before you quote
+
+- `cargo run -q -p tessera -- help`: every CLI command this build knows, with the milestone that ships it.
+- `bin/check`: the gate (fmt, clippy -D warnings, tests, repo guards). CI runs exactly this.
+- `cargo xtask boundaries`: crate tier violations; the tier table is xtask/src/tiers.rs.
+- `gh issue list --label spec:ambiguity`: spec gaps that are open right now.
+
+## Where do I look for X
+
+- [CLAUDE.md](https://raw.githubusercontent.com/developerz-ai/tessera/main/CLAUDE.md): agent contract — axioms, commands, crate tiers, non-negotiables, preventive rules.
+- [Spec v0.1](https://raw.githubusercontent.com/developerz-ai/tessera/main/docs/spec/v0.1.md): the language — principles, grammar, types, declarations, semantics, effects, stores and surfaces, verification, diagnostics, stdlib, work packages, milestones.
+- [Packages](https://raw.githubusercontent.com/developerz-ai/tessera/main/docs/spec/packages.md): git URL + tag dependencies, lockfile with commit and IR hash, minimal version selection, signed release tags. Amends spec §8.
+- [Open questions](https://raw.githubusercontent.com/developerz-ai/tessera/main/docs/spec/open-questions.md): known spec gaps; never guess these in code.
+- [Crate map](https://raw.githubusercontent.com/developerz-ai/tessera/main/docs/architecture/crates.md): which crate owns which work package, tiers, frozen interfaces.
+- [Corpus](https://raw.githubusercontent.com/developerz-ai/tessera/main/corpus/README.md): example programs, negative tests, semantics cases, seeded bugs.
+- [Contributing](https://raw.githubusercontent.com/developerz-ai/tessera/main/CONTRIBUTING.md): what helps now, ground rules, workflow.
+- [Security](https://raw.githubusercontent.com/developerz-ai/tessera/main/SECURITY.md): false proofs, capability escapes and secret leaks are security bugs.

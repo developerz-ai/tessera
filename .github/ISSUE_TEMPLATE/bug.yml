@@ -1,0 +1,32 @@
+name: 🐛 Bug
+description: The toolchain does something the spec says it shouldn't.
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal input
+      description: The smallest .tes program or command that reproduces it.
+      render: rust
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Paste the output — with `--json` if the command supports it.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the spec says should happen
+      description: Quote the section.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "`tessera --version` and the commit"

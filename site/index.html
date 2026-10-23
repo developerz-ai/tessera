@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tessera — laws, proven</title>
+<meta name="description" content="Tessera is a declarative, deterministic language for application logic. Declare types, rules and laws; the compiler proves the laws or returns a counterexample.">
+<meta property="og:title" content="Tessera — laws, proven">
+<meta property="og:description" content="Declare types, rules and laws. The compiler proves the laws, or hands you a counterexample.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://developerz-ai.github.io/tessera/">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4'%3E%3Crect width='2' height='2' fill='%23b4492c'/%3E%3Crect x='2' width='2' height='2' fill='%232f4a6b'/%3E%3Crect y='2' width='2' height='2' fill='%23c9a96e'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%231f1b16'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,600;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --stone: #f4efe6;
+  --stone-2: #ebe3d5;
+  --ink: #1f1b16;
+  --ink-2: #5a5148;
+  --line: #d8ccb8;
+  --terracotta: #b4492c;
+  --terracotta-ink: #8f3920;
+  --lapis: #2f4a6b;
+  --ochre: #c9a96e;
+  --code-bg: #1f1b16;
+  --code-ink: #efe7da;
+  --code-dim: #a39784;
+  --code-key: #e9a07f;
+  --code-type: #9fb8d6;
+  --code-str: #d9c08a;
+  --gutter: clamp(16px, 4vw, 48px);
+  --measure: 68ch;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--stone);
+  color: var(--ink);
+  font: 400 1.0625rem/1.6 "Schibsted Grotesk", system-ui, sans-serif;
+}
+a { color: var(--terracotta-ink); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--lapis); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--gutter); }
+
+header.top { border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+.mark { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.02em; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+.mark svg { width: 22px; height: 22px; }
+nav a { color: var(--ink-2); text-decoration: none; margin-left: 20px; font-size: 0.95rem; }
+nav a:hover { color: var(--ink); }
+
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.hero .wrap { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px; align-items: center; padding-top: 80px; padding-bottom: 80px; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta-ink); margin: 0 0 18px; }
+h1 { font-weight: 800; font-size: clamp(2.4rem, 5.6vw, 4.6rem); line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 24px; }
+h1 em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+.lede { font-size: 1.2rem; color: var(--ink-2); max-width: 46ch; margin: 0 0 32px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 2px; font-weight: 600; text-decoration: none; border: 1.5px solid var(--ink); color: var(--ink); background: transparent; }
+.btn.primary { background: var(--terracotta); border-color: var(--terracotta); color: #fbf6ee; }
+.btn.primary:hover { background: var(--terracotta-ink); border-color: var(--terracotta-ink); }
+.btn:not(.primary):hover { background: var(--stone-2); }
+.mosaic { width: 100%; aspect-ratio: 1; display: block; }
+.mosaic-cap { font: 400 0.75rem/1.4 "JetBrains Mono", monospace; color: var(--ink-2); margin-top: 10px; text-align: right; }
+
+section { padding: 88px 0; border-bottom: 1px solid var(--line); }
+h2 { font-weight: 800; font-size: clamp(1.8rem, 3.4vw, 2.6rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 16px; }
+.sub { color: var(--ink-2); max-width: var(--measure); margin: 0 0 40px; }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.panel { background: var(--code-bg); color: var(--code-ink); border-radius: 3px; padding: 22px 24px; overflow-x: auto; }
+.panel h3 { margin: 0 0 14px; font: 600 0.75rem/1 "JetBrains Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; color: var(--code-dim); }
+pre, code { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+pre { margin: 0; font: 400 0.86rem/1.65 "JetBrains Mono", monospace; white-space: pre; }
+.k { color: var(--code-key); } .t { color: var(--code-type); } .s { color: var(--code-str); } .c { color: var(--code-dim); }
+.verdict { display: inline-block; margin-top: 16px; font: 600 0.8rem/1 "JetBrains Mono", monospace; padding: 6px 10px; border-radius: 2px; background: var(--terracotta); color: #fbf6ee; }
+
+.three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 3px solid var(--ink); }
+.three > div { padding: 28px 28px 8px 0; }
+.three > div + div { padding-left: 28px; border-left: 1px solid var(--line); }
+.three h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+.three h3 i { width: 14px; height: 14px; display: inline-block; }
+.three p { color: var(--ink-2); margin: 0 0 14px; }
+.principles code, .three code { font: 400 0.85rem "JetBrains Mono", monospace; background: var(--stone-2); padding: 2px 6px; border-radius: 2px; color: var(--ink); }
+
+.principles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 48px; }
+.principles div { padding: 20px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 48px 1fr; gap: 4px 12px; }
+.principles b { font: 600 0.85rem/1.6 "JetBrains Mono", monospace; color: var(--terracotta-ink); grid-row: span 2; }
+.principles strong { font-weight: 600; }
+.principles span { color: var(--ink-2); font-size: 0.97rem; }
+
+.pipeline { background: var(--stone-2); border: 1px solid var(--line); border-radius: 3px; padding: 24px; overflow-x: auto; }
+.pipeline pre { color: var(--ink); font-size: 0.9rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.97rem; }
+th, td { text-align: left; padding: 14px 16px 14px 0; border-top: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; border-top: 3px solid var(--ink); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+tr.now td:first-child::before { content: ""; display: inline-block; width: 9px; height: 9px; background: var(--terracotta); margin-right: 8px; vertical-align: 1px; }
+.table-scroll { overflow-x: auto; }
+
+footer { padding: 48px 0 64px; color: var(--ink-2); font-size: 0.92rem; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-top: 48px; padding-bottom: 56px; gap: 32px; }
+  .mosaic-box { max-width: 360px; }
+  .pair, .principles { grid-template-columns: 1fr; }
+  .three { grid-template-columns: 1fr; }
+  .three > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  nav a:not(.gh) { display: none; }
+  section { padding: 64px 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mosaic rect { animation: set 600ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * 6ms); }
+  @keyframes set { from { opacity: 0; transform: translateY(-6px); } }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="./" aria-label="Tessera home">
+      <svg viewBox="0 0 4 4" aria-hidden="true"><rect width="1.9" height="1.9" fill="#b4492c"/><rect x="2.1" width="1.9" height="1.9" fill="#2f4a6b"/><rect y="2.1" width="1.9" height="1.9" fill="#c9a96e"/><rect x="2.1" y="2.1" width="1.9" height="1.9" fill="#1f1b16"/></svg>
+      Tessera
+    </a>
+    <nav>
+      <a href="https://github.com/developerz-ai/tessera/blob/main/docs/spec/v0.1.md">Spec</a>
+      <a href="#roadmap">Roadmap</a>
+      <a class="gh" href="https://github.com/developerz-ai/tessera">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">A language for application logic · pre-M0</p>
+      <h1>Declare the laws.<br><em>The compiler proves them.</em></h1>
+      <p class="lede">Tessera is declarative and deterministic. You write types, rules and laws. The compiler builds the implementation and proves every law, or hands you the exact state and call that breaks it.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/developerz-ai/tessera/blob/main/docs/spec/v0.1.md">Read the spec</a>
+        <a class="btn" href="https://github.com/developerz-ai/tessera">Star on GitHub</a>
+      </div>
+    </div>
+    <div class="mosaic-box">
+      <svg class="mosaic" id="mosaic" viewBox="0 0 24 24" role="img" aria-label="A mosaic of stone-coloured tiles"></svg>
+      <p class="mosaic-cap">seed 0x7e55e1a · same seed, same mosaic, every browser</p>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Errors are counterexamples.</h2>
+    <p class="sub">Forget one ownership check and the build doesn't say "something's wrong". It shows you the failing state, the call that broke the law, and one suggested fix, in JSON for agents and plain text for people.</p>
+    <div class="pair">
+      <div class="panel">
+        <h3>todo.tes</h3>
+<pre><span class="k">rule</span> complete(by: <span class="t">Principal</span>, id: <span class="t">Id</span>&lt;<span class="t">Task</span>&gt;) {
+  <span class="k">let</span> t = tasks[id] <span class="k">or fail</span> <span class="t">NotFound</span>
+  <span class="c">// require t.owner == by.id or fail NotFound</span>
+  tasks[id].status = <span class="t">Done</span>(clock.now)
+    <span class="k">unless</span> t.status <span class="k">is</span> <span class="t">Done</span>
+}
+
+<span class="k">law</span> done_once: <span class="k">forall</span> t <span class="k">in</span> tasks.
+  t.status <span class="k">is</span> <span class="t">Done</span> =&gt; t.status.at &gt;= t.created
+<span class="c">// law isolation: only an owner changes their tasks</span>
+
+<span class="k">prove</span> complete(by, id) <span class="k">is</span> idempotent
+<span class="k">example</span> complete(bob, alice_task) <span class="k">fails</span> <span class="t">NotFound</span></pre>
+      </div>
+      <div class="panel">
+        <h3>tessera check --json</h3>
+<pre>{ <span class="s">"code"</span>: <span class="s">"E-LAW-001"</span>,
+  <span class="s">"law"</span>:  <span class="s">"todo.isolation"</span>,
+  <span class="s">"rule"</span>: <span class="s">"todo.complete"</span>,
+  <span class="s">"counterexample"</span>: {
+    <span class="s">"state"</span>: { <span class="s">"tasks"</span>: [
+      { <span class="s">"id"</span>: 1, <span class="s">"owner"</span>: <span class="s">"alice"</span> } ] },
+    <span class="s">"call"</span>:   <span class="s">"complete(by: bob, id: 1)"</span>,
+    <span class="s">"effect"</span>: <span class="s">"tasks[1].status changed by bob"</span>
+  },
+  <span class="s">"hint"</span>: <span class="s">"add `require t.owner == by.id
+           or fail NotFound`"</span> }</pre>
+        <span class="verdict">refuted</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Three concepts. That's the language.</h2>
+    <p class="sub">A small core means fewer wrong outputs from the models writing it, and less for the people reviewing it.</p>
+    <div class="three">
+      <div>
+        <h3><i style="background:var(--lapis)"></i>Type</h3>
+        <p>Types are constraints, not just shapes. Refinements become compile errors, and the solver uses them.</p>
+        <p><code>Int[1..100]</code> <code>Text matching email</code> <code>Secret&lt;Text&gt;</code></p>
+      </div>
+      <div>
+        <h3><i style="background:var(--terracotta)"></i>Rule</h3>
+        <p>An atomic state change: preconditions, then declared writes. All reads see the state before the rule. Failures are values.</p>
+        <p><code>require … or fail NotFound</code></p>
+      </div>
+      <div>
+        <h3><i style="background:var(--ochre)"></i>Law</h3>
+        <p>An invariant that must hold after every rule. Laws are what humans review: short, and where the errors are expensive.</p>
+        <p><code>forall t in tasks. …</code></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Built for code you didn't write.</h2>
+    <p class="sub">AI writes most new code now. Reading it all line by line doesn't scale, but verifying it does. People review the types, laws and examples, and the solver checks the rule bodies.</p>
+    <div class="principles">
+      <div><b>P1</b><strong>Deterministic everywhere</strong><span>Same state and inputs, same outputs, bit for bit, on every backend.</span></div>
+      <div><b>P3</b><strong>No ambient effects</strong><span>Time, randomness, IO and secrets are declared <code>needs</code>. Every input is logged, and every run replays.</span></div>
+      <div><b>P4</b><strong>Review where it counts</strong><span>Humans review types, laws and examples. Machines write rule bodies.</span></div>
+      <div><b>P5</b><strong>Errors you can act on</strong><span>Concrete failing inputs with stable codes, in human form and JSON.</span></div>
+      <div><b>P7</b><strong>Hashes are identity</strong><span>One canonical form per definition. Renaming or reformatting doesn't change the hash.</span></div>
+      <div><b>P8</b><strong>One oracle</strong><span>The interpreter defines the semantics. Every backend is differential-tested against it.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>One IR. One oracle. No JIT.</h2>
+    <p class="sub">Every stage reads the same typed, hashed Core IR. A solver result of Unknown fails the build. Packages are git URLs plus tags, pinned by commit and IR hash, with no central registry.</p>
+    <div class="pipeline">
+<pre>source ─▶ AST ─▶ Core IR (typed, hashed) ─┬─▶ Interpreter   semantic oracle · dev loop
+                                          ├─▶ Verifier      Z3 / cvc5 · proven · refuted · unknown = fail
+                                          └─▶ Dataflow IR ─▶ Low IR ─▶ C · Wasm · LLVM IR</pre>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="wrap">
+    <h2>Roadmap</h2>
+    <p class="sub">Nothing has been compiled or benchmarked yet. Each milestone has a gate, and claims about speed are hypotheses to test in M4 and M6.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Milestone</th><th>Delivers</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr class="now"><td>M0 Spec &amp; corpus</td><td>20 example programs, semantics cases, open questions settled</td><td>Human sign-off on laws and examples</td></tr>
+        <tr><td>M1 Interpreter</td><td>Parser, formatter, type checker, interpreter. Todo runs in the REPL</td><td>All examples pass</td></tr>
+        <tr><td>M2 Verifier</td><td>SMT encoding, counterexamples, fast and full modes</td><td>Zero false proofs on a seeded-bug suite</td></tr>
+        <tr><td>M3 Store, CLI, HTTP</td><td>Todo app with auth on SQLite</td><td>End-to-end tests, store parity</td></tr>
+        <tr><td>M4 AOT via C</td><td>Lowering and C emission</td><td>Parity on every example, first benchmark</td></tr>
+        <tr><td>M5 Wasm &amp; web</td><td>Wasm backend, web surface</td><td>Browser build passes the same examples</td></tr>
+        <tr><td>M6 Optimizer &amp; packages</td><td>Fusion, e-graphs, index selection, git-native packages</td><td>Parity kept, benchmarks improve, hashes stable</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="margin-top:32px"><a href="https://github.com/developerz-ai/tessera/blob/main/CONTRIBUTING.md">Help with M0</a>: example programs, semantics cases, and settling <a href="https://github.com/developerz-ai/tessera/blob/main/docs/spec/open-questions.md">open questions</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tessera · MIT OR Apache-2.0 · by <a href="https://github.com/developerz-ai">developerz-ai</a></span>
+    <span><a href="https://github.com/developerz-ai/tessera">GitHub</a> · <a href="https://github.com/developerz-ai/tessera/blob/main/docs/spec/v0.1.md">Spec v0.1</a> · <a href="https://github.com/developerz-ai/tessera/blob/main/llms.txt">llms.txt</a></span>
+  </div>
+</footer>
+
+<script>
+// Deterministic mosaic: a fixed seed through mulberry32, so every visitor sees the same tiles.
+(function () {
+  var svg = document.getElementById('mosaic');
+  if (!svg) return;
+  var s = 0x7e55e1a;
+  function rnd() { s |= 0; s = s + 0x6d2b79f5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  var stones = ['#e6dccb', '#ddd0bb', '#d3c4ab', '#ebe3d5', '#c9b99c'];
+  var accents = ['#b4492c', '#2f4a6b', '#c9a96e', '#1f1b16'];
+  var ns = 'http://www.w3.org/2000/svg', n = 24, i = 0, frag = document.createDocumentFragment();
+  for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) {
+    var dx = x - 11.5, dy = y - 11.5, r = Math.sqrt(dx * dx + dy * dy);
+    var ring = Math.abs(r - 8) < 0.9 || Math.abs(r - 4) < 0.7;
+    var fill = ring ? accents[(x + y) % 3] : (r < 2.2 ? accents[3] : stones[Math.floor(rnd() * stones.length)]);
+    if (!ring && r >= 2.2 && rnd() < 0.035) fill = accents[Math.floor(rnd() * 3)];
+    var j = (rnd() - 0.5) * 0.08, rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', (x + 0.06 + j).toFixed(3)); rect.setAttribute('y', (y + 0.06 - j).toFixed(3));
+    rect.setAttribute('width', '0.88'); rect.setAttribute('height', '0.88');
+    rect.setAttribute('fill', fill); rect.style.setProperty('--i', i++);
+    frag.appendChild(rect);
+  }
+  svg.appendChild(frag);
+})();
+</script>
+</body>
+</html>

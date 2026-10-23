@@ -1,0 +1,17 @@
+[package]
+name = "tessera-lower"
+description = "Lowering: Core IR to Dataflow IR to Low IR, C emission, AOT build (spec §9)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true

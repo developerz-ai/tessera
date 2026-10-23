@@ -1,0 +1,15 @@
+[package]
+name = "tessera-diag"
+description = "Diagnostics: stable codes, spans, counterexamples, human and JSON forms (spec §11)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]

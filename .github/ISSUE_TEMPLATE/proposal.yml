@@ -1,0 +1,33 @@
+name: ✨ Proposal
+description: Propose a change to the language or toolchain.
+labels: ["type:proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The core has three concepts — type, rule, law (P2). A proposal that needs a fourth is a
+        very high bar. Prefer expressing it with the three.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can't be expressed, verified, or is error-prone today. Not the solution yet.
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: What the user writes
+      description: The Tessera code, and the law or example that shows it working.
+      render: rust
+    validations:
+      required: true
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Principle check (spec §1)
+      options:
+        - label: Deterministic on every backend (P1, P8)
+        - label: No new ambient effect — anything effectful is a declared `need` (P3)
+        - label: Laws over it stay in the decidable fragment, or it is explicitly `assume`d (§10)
+        - label: Failures produce a stable diagnostic code with a counterexample (P5)

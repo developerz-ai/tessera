@@ -1,0 +1,19 @@
+[package]
+name = "tessera-dev"
+description = "Developer loop: REPL, `why` derivations, LSP, typed-hole `fill` (spec §11)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-ir.workspace = true
+tessera-interp.workspace = true
+tessera-verify.workspace = true

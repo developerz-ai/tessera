@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# The gate. CI runs exactly this (.github/workflows/ci.yml). Green = mergeable.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+step() { printf '\n\033[1m▸ %s\033[0m\n' "$*"; }
+
+step "fmt";      cargo fmt --all -- --check
+step "clippy";   cargo clippy --workspace --all-targets --locked -- -D warnings
+step "test";     cargo test --workspace --locked --quiet
+step "guards";   cargo xtask all
+printf '\n\033[0;32m✔ bin/check green\033[0m\n'

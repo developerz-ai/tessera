@@ -1,0 +1,11 @@
+# Review is where conventions become enforcement for what a test cannot check.
+*                       @developerz-ai/admin
+
+# The spec is normative; laws and examples are what humans review (P4).
+/docs/spec/             @developerz-ai/admin
+/corpus/                @developerz-ai/admin
+
+# The gate and the tier table.
+/xtask/                 @developerz-ai/admin
+/bin/                   @developerz-ai/admin
+/.github/               @developerz-ai/admin

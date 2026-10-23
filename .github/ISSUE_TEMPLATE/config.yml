@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security vulnerability (incl. false proofs)
+    url: https://github.com/developerz-ai/tessera/security/advisories/new
+    about: Report privately, not as a public issue. See SECURITY.md.
+  - name: 💬 Question
+    url: https://github.com/developerz-ai/tessera/issues/new?labels=question&title=Question%3A+
+    about: Not a bug, not a proposal yet.

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Fresh clone → ready to run bin/check. Idempotent; safe to re-run after every pull.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+ok() { printf '\033[0;32m✔\033[0m  %s\n' "$*"; }
+die() { printf '\033[0;31m✘\033[0m  %s\n' "$*" >&2; exit 1; }
+
+command -v rustup >/dev/null || die "rustup not found — install from https://rustup.rs"
+command -v git >/dev/null || die "git not found"
+command -v jq >/dev/null || echo "!  jq not found — the Claude Code rustfmt hook (.claude/hooks/fmt-rust.sh) will be a no-op"
+
+rustup show active-toolchain >/dev/null   # installs the toolchain pinned in rust-toolchain.toml
+ok "toolchain $(rustc --version)"
+
+git config core.symlinks true             # AGENTS.md -> CLAUDE.md
+mkdir -p tmp
+cargo fetch --quiet
+cargo build --quiet --workspace
+ok "workspace builds. Next: bin/check"

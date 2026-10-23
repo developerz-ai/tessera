@@ -1,0 +1,31 @@
+[package]
+name = "tessera"
+description = "The `tessera` command-line tool (spec §11)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "tessera"
+path = "src/main.rs"
+
+[dependencies]
+tessera-diag.workspace = true
+tessera-syntax.workspace = true
+tessera-check.workspace = true
+tessera-interp.workspace = true
+tessera-verify.workspace = true
+tessera-lower.workspace = true
+tessera-pkg.workspace = true
+tessera-store.workspace = true
+tessera-wasm.workspace = true
+tessera-opt.workspace = true
+tessera-dev.workspace = true
+tessera-surface.workspace = true

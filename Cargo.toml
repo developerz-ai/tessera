@@ -1,0 +1,56 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "xtask"]
+default-members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.98"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/developerz-ai/tessera"
+homepage = "https://developerz-ai.github.io/tessera/"
+authors = ["developerz-ai"]
+publish = false
+
+[workspace.dependencies]
+# Internal crates. Tiers are enforced by `cargo xtask boundaries` (xtask/src/tiers.rs).
+tessera-diag = { path = "crates/tessera-diag" }
+tessera-ir = { path = "crates/tessera-ir" }
+tessera-syntax = { path = "crates/tessera-syntax" }
+tessera-check = { path = "crates/tessera-check" }
+tessera-interp = { path = "crates/tessera-interp" }
+tessera-verify = { path = "crates/tessera-verify" }
+tessera-lower = { path = "crates/tessera-lower" }
+tessera-pkg = { path = "crates/tessera-pkg" }
+tessera-store = { path = "crates/tessera-store" }
+tessera-wasm = { path = "crates/tessera-wasm" }
+tessera-opt = { path = "crates/tessera-opt" }
+tessera-dev = { path = "crates/tessera-dev" }
+tessera-surface = { path = "crates/tessera-surface" }
+
+# Third-party. Add here, then `dep.workspace = true` in the crate. Reuse list: spec §13.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+print_stdout = "warn"
+float_arithmetic = "warn"
+module_name_repetitions = "allow"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
