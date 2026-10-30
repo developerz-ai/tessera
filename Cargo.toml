@@ -20,7 +20,7 @@ tessera-ir = { path = "packages/tessera-ir" }
 tessera-syntax = { path = "crates/tessera-syntax" }
 tessera-check = { path = "packages/tessera-check" }
 tessera-interp = { path = "packages/tessera-interp" }
-tessera-verify = { path = "crates/tessera-verify" }
+tessera-verify = { path = "packages/tessera-verify" }
 tessera-lower = { path = "packages/tessera-lower" }
 tessera-pkg = { path = "packages/tessera-pkg" }
 tessera-store = { path = "packages/tessera-store" }
