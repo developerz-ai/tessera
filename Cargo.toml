@@ -26,7 +26,7 @@ tessera-pkg = { path = "crates/tessera-pkg" }
 tessera-store = { path = "crates/tessera-store" }
 tessera-wasm = { path = "crates/tessera-wasm" }
 tessera-opt = { path = "crates/tessera-opt" }
-tessera-dev = { path = "crates/tessera-dev" }
+tessera-dev = { path = "packages/tessera-dev" }
 tessera-surface = { path = "crates/tessera-surface" }
 
 # Third-party. Add here, then `dep.workspace = true` in the crate. Reuse list: spec §13.

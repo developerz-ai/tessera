@@ -60,6 +60,7 @@ Toolchain pinned in `rust-toolchain.toml` (Rust 1.98.0, edition 2024). `bin/chec
 ```
 crates/tessera-*/   one crate per work package (spec §13); see docs/architecture/crates.md
 packages/tessera/   the `tessera` binary
+packages/tessera-dev/  developer loop: REPL, `why`, LSP, `fill`
 xtask/              repo guards (`cargo xtask …`) — tiers, links, CLAUDE.md size
 corpus/             example programs, negative tests, semantics cases — written BEFORE code
 docs/spec/          the language spec (normative) + amendments + open questions
