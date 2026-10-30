@@ -19,6 +19,11 @@ reviews:
         No unwrap/expect/panic outside tests. No HashMap/HashSet iteration reaching output, IR,
         hashes or diagnostics. Errors are typed and map to stable E-<AREA>-NNN codes.
         Imports only to lower tiers (CLAUDE.md "Crate tiers").
+    - path: "packages/**/*.rs"
+      instructions: >-
+        No unwrap/expect/panic outside tests. No HashMap/HashSet iteration reaching output, IR,
+        hashes or diagnostics. Errors are typed and map to stable E-<AREA>-NNN codes.
+        Imports only to lower tiers (CLAUDE.md "Crate tiers").
     - path: "crates/tessera-verify/**"
       instructions: >-
         Soundness first: Unknown/timeout must never become Proven; fast mode may miss violations

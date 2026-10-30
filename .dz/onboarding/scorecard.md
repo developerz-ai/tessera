@@ -60,7 +60,7 @@
 
 ## `smoke_test` — unprovable
 
-- crates/tessera/tests/cli.rs in the repository
+- packages/tessera/tests/cli.rs in the repository
 - ./bin/check at head: not_runnable, exit 127 (0.0s)
 
 ## `env_example` — gap
