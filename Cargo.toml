@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "xtask"]
-default-members = ["crates/*"]
+members = ["crates/*", "packages/*", "xtask"]
+default-members = ["crates/*", "packages/*"]
 
 [workspace.package]
 version = "0.0.0"
@@ -16,7 +16,7 @@ publish = false
 [workspace.dependencies]
 # Internal crates. Tiers are enforced by `cargo xtask boundaries` (xtask/src/tiers.rs).
 tessera-diag = { path = "crates/tessera-diag" }
-tessera-ir = { path = "crates/tessera-ir" }
+tessera-ir = { path = "packages/tessera-ir" }
 tessera-syntax = { path = "crates/tessera-syntax" }
 tessera-check = { path = "crates/tessera-check" }
 tessera-interp = { path = "crates/tessera-interp" }
