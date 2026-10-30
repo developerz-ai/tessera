@@ -17,7 +17,7 @@ A declarative, deterministic language for the logic layer of applications: you d
 | Deterministic toolchain | No `HashMap`/`HashSet` iteration in anything that reaches output, IR, hashes or diagnostics — use `BTreeMap`/`BTreeSet` or sort. No wall clock, no randomness, no env reads in the compiler core. Floats: IEEE-754, no fast-math, canonical NaN. |
 | Reuse, don't rewrite (spec §13) | `chumsky`/`logos`, Z3/cvc5, `egg`, `rusqlite`, `wasm-encoder`, `blake3`, `tower-lsp`. Never write a solver. New dependency → `[workspace.dependencies]` + a reason in the PR. |
 | SRP | One file, one job. Target <300 LOC, hard ceiling ~500. |
-| Tests next to code | `#[cfg(test)]` for units; `crates/<c>/tests/` for crate-level; `corpus/` for language behavior. A test that can't fail isn't a test. |
+| Tests next to code | `#[cfg(test)]` for units; `crates/<c>/tests/` (packages/<c>/tests/ for crates moved to packages/) for crate-level; `corpus/` for language behavior. A test that can't fail isn't a test. |
 
 ## Design axioms (override any instinct that conflicts)
 
@@ -61,6 +61,7 @@ Toolchain pinned in `rust-toolchain.toml` (Rust 1.98.0, edition 2024). `bin/chec
 crates/tessera-*/   one crate per work package (spec §13); see docs/architecture/crates.md
 packages/tessera/   the `tessera` binary
 packages/tessera-dev/  developer loop: REPL, `why`, LSP, `fill`
+packages/tessera-*/ crates moved to the packages/ house layout (migration in flight)
 xtask/              repo guards (`cargo xtask …`) — tiers, links, CLAUDE.md size
 corpus/             example programs, negative tests, semantics cases — written BEFORE code
 docs/spec/          the language spec (normative) + amendments + open questions

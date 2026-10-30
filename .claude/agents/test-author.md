@@ -19,7 +19,7 @@ Report the mutation each test catches. A test whose mutation you didn't run — 
 | Kind | Location |
 |---|---|
 | unit | `#[cfg(test)] mod tests` next to the code |
-| crate-level | `crates/<crate>/tests/*.rs` |
+| crate-level | `crates/<crate>/tests/*.rs` (packages/<crate>/tests/*.rs for crates moved to packages/) |
 | language behavior | `corpus/programs/`, `corpus/negative/<code>/`, `corpus/semantics/` |
 | verifier soundness | `corpus/seeded-bugs/` — must be **refuted**, never proven |
 
