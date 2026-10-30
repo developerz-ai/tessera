@@ -17,7 +17,7 @@ publish = false
 # Internal crates. Tiers are enforced by `cargo xtask boundaries` (xtask/src/tiers.rs).
 tessera-diag = { path = "packages/tessera-diag" }
 tessera-ir = { path = "packages/tessera-ir" }
-tessera-syntax = { path = "crates/tessera-syntax" }
+tessera-syntax = { path = "packages/tessera-syntax" }
 tessera-check = { path = "packages/tessera-check" }
 tessera-interp = { path = "packages/tessera-interp" }
 tessera-verify = { path = "crates/tessera-verify" }
