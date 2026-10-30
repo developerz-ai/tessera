@@ -105,7 +105,7 @@ cargo run -q -p tessera -- help # every command, with the milestone that ships i
 
 ```text
 crates/      one crate per work package
-packages/    house-layout crates: the `tessera` binary, `tessera-ir`
+packages/    house-layout crates: the `tessera` binary, `tessera-ir`, `tessera-dev`
 xtask/       repo guards: crate tiers, doc links, CLAUDE.md size
 corpus/      example programs, negative tests, semantics cases — written before code
 docs/spec/   the language spec, amendments, open questions
