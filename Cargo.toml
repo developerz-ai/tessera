@@ -27,7 +27,7 @@ tessera-store = { path = "packages/tessera-store" }
 tessera-wasm = { path = "crates/tessera-wasm" }
 tessera-opt = { path = "packages/tessera-opt" }
 tessera-dev = { path = "packages/tessera-dev" }
-tessera-surface = { path = "crates/tessera-surface" }
+tessera-surface = { path = "packages/tessera-surface" }
 
 # Third-party. Add here, then `dep.workspace = true` in the crate. Reuse list: spec §13.
 serde = { version = "1", features = ["derive"] }
