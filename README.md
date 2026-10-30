@@ -94,12 +94,22 @@ Tracked as [GitHub milestones](https://github.com/developerz-ai/tessera/mileston
 
 ## Try the scaffold
 
+Prerequisites: [rustup](https://rustup.rs) and Git on `PATH`. `jq` is optional
+(used by the Claude Code formatting hook).
+
 ```sh
 git clone https://github.com/developerz-ai/tessera && cd tessera
-bin/setup                       # pinned toolchain, build
-bin/check                       # the gate: fmt, clippy, tests, repo guards
-cargo run -q -p tessera -- help # every command, with the milestone that ships it
+bin/setup  # activate pinned toolchain, fetch and build with --locked; safe to repeat
+bin/dev    # print CLI help, including command milestones, then exit 0
+bin/stop   # no-op; safe to repeat, nothing runs in the background
+bin/fmt    # format the workspace
+bin/check  # the gate: fmt check, Clippy, tests, repo guards
 ```
+
+Setup uses the committed `Cargo.lock` without updating it. The scaffold is a CLI,
+not a persistent web app: `bin/dev` is a short-lived help smoke command. The gate's
+Clippy phase typechecks all workspace targets as well as linting them; no separate
+`cargo check` phase is needed.
 
 ## Repository
 

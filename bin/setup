@@ -15,6 +15,6 @@ ok "toolchain $(rustc --version)"
 
 git config core.symlinks true             # AGENTS.md -> CLAUDE.md
 mkdir -p tmp
-cargo fetch --quiet
-cargo build --quiet --workspace
+cargo fetch --quiet --locked
+cargo build --quiet --workspace --locked
 ok "workspace builds. Next: bin/check"

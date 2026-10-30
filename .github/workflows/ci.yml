@@ -28,8 +28,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # rustup is preinstalled; this installs the toolchain pinned in rust-toolchain.toml.
-      - run: rustup show active-toolchain
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -39,4 +37,8 @@ jobs:
             target
           key: cargo-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
           restore-keys: cargo-${{ runner.os }}-
+      # Setup activates the pinned toolchain; exercise the real CLI smoke lifecycle.
+      - run: bin/setup
+      - run: bin/dev
+      - run: bin/stop
       - run: bin/check
