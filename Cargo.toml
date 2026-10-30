@@ -23,7 +23,7 @@ tessera-interp = { path = "packages/tessera-interp" }
 tessera-verify = { path = "crates/tessera-verify" }
 tessera-lower = { path = "packages/tessera-lower" }
 tessera-pkg = { path = "packages/tessera-pkg" }
-tessera-store = { path = "crates/tessera-store" }
+tessera-store = { path = "packages/tessera-store" }
 tessera-wasm = { path = "crates/tessera-wasm" }
 tessera-opt = { path = "packages/tessera-opt" }
 tessera-dev = { path = "packages/tessera-dev" }
