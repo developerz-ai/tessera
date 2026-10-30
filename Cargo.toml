@@ -19,7 +19,7 @@ tessera-diag = { path = "packages/tessera-diag" }
 tessera-ir = { path = "packages/tessera-ir" }
 tessera-syntax = { path = "crates/tessera-syntax" }
 tessera-check = { path = "packages/tessera-check" }
-tessera-interp = { path = "crates/tessera-interp" }
+tessera-interp = { path = "packages/tessera-interp" }
 tessera-verify = { path = "crates/tessera-verify" }
 tessera-lower = { path = "crates/tessera-lower" }
 tessera-pkg = { path = "crates/tessera-pkg" }
