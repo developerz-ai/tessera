@@ -15,7 +15,7 @@ publish = false
 
 [workspace.dependencies]
 # Internal crates. Tiers are enforced by `cargo xtask boundaries` (xtask/src/tiers.rs).
-tessera-diag = { path = "crates/tessera-diag" }
+tessera-diag = { path = "packages/tessera-diag" }
 tessera-ir = { path = "packages/tessera-ir" }
 tessera-syntax = { path = "crates/tessera-syntax" }
 tessera-check = { path = "packages/tessera-check" }
