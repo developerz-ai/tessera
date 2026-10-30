@@ -32,6 +32,5 @@ Rust + Cargo (1.98.0, rustup). The gate is `bin/check` (`cargo fmt --all -- --ch
 - Formatting — `bin/fmt` / rustfmt owns it (`rustfmt.toml`: edition 2024, max_width 100, field init shorthand); never ask for manual format changes.
 - `unwrap`/`expect`/`panic` inside `#[cfg(test)]` or `crates/*/tests/` — explicitly allowed by `clippy.toml`.
 - `module_name_repetitions` — allowed workspace-wide.
-- `print_stdout` and `float_arithmetic` — warn-level by design, not merge blockers.
 - Planned CLI commands answering `E-CLI-002` with their milestone — intended scaffold behavior, not a bug.
 - The `AGENTS.md` symlink to `CLAUDE.md` and the `tmp/` directory `bin/setup` creates.
