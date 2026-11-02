@@ -32,14 +32,14 @@ The compiler derives the implementation, runs an SMT solver over your laws, and 
 
 ```tessera
 rule complete(by: Principal, id: Id<Task>) {
-  let t = tasks[id] or fail NotFound
-  require t.owner == by.id or fail NotFound
-  tasks[id].status = Done(clock.now) unless t.status is Done
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by.id or fail NotFound;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
 }
 
-law done_once: forall t in tasks. t.status is Done => t.status.at >= t.created
-prove complete(by, id) is idempotent
-example complete(bob, alice_task) fails NotFound
+law done_once: forall t in tasks. t.status is Done => t.status.at >= t.created;
+prove complete(by, id) is idempotent;
+example complete(bob, alice_task) fails NotFound;
 ```
 
 Drop the `require` line and an isolation law (only an owner changes their tasks) fails with a counterexample, as JSON an agent can act on:
@@ -48,7 +48,7 @@ Drop the `require` line and an isolation law (only an owner changes their tasks)
 { "code": "E-LAW-001", "law": "todo.isolation", "rule": "todo.complete",
   "counterexample": { "state": { "tasks": [ { "id": 1, "owner": "alice" } ] },
                       "call": "complete(by: bob, id: 1)" },
-  "hint": "add `require t.owner == by.id or fail NotFound`" }
+  "hint": "add `require t.owner == by.id or fail NotFound;`" }
 ```
 
 ## Why
