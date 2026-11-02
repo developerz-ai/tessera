@@ -39,11 +39,13 @@ tessera release 2.2.0
   4. creates a signed annotated tag v2.2.0 and pushes it
 ```
 
+`tessera release <version>` is the only release command; there is no `publish` command and no upload step. A release is a signed annotated tag `v<version>` in the package's own repository, and consumers fetch it by URL and tag — no central registry is involved. The command reports under [v0.1 §11](v0.1.md#11-diagnostics-and-cli-contract)'s diagnostic contract: every result and every failure exists in human form and as JSON (`--json`).
+
 Capability compatibility MUST follow [v0.1 §6](v0.1.md#6-effects-and-capabilities) and the normative [§8 compatibility rule](v0.1.md#8-packages-hashing-and-loading): compare each public rule's declared capability set by resolved capability identity, not local binding names or inferred body usage. Additions, removals and replacements MUST require a major bump; reordering alone is not a capability-set change. Unused declared capabilities remain in the signature and release metadata. Removing one is therefore not a compatible release merely because it reduces required power.
 
 Release metadata MUST expose these declared sets per public rule using resolved capability identities, so callers can check requirement coverage and compatibility tooling can compare contracts without inspecting dependency bodies. Renaming a local binding without changing its resolved identity does not change the declared set or its normalized hash; source order is not semantic set order. This metadata does not grant capabilities: the application's `[grant]` table still limits dependencies, and insufficient grants fail checking and the build. If compatibility cannot be decided, release MUST fail safe and require a major bump, as in §8.
 
-CI can run this on merge. No upload step exists, so the git host is the registry.
+CI can run this on merge. Nothing is uploaded, and no central index exists — a consumer resolves a package from its git URL and tag.
 
 ## Resolution and trust
 
