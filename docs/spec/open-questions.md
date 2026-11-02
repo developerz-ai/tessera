@@ -16,7 +16,7 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
 | [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `output`, `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
-| [G4](https://github.com/developerz-ai/tessera/issues/8) | No productions for `store`, `surface`, `app`, `use`, `formula`, `constraints`, `pat`, `place`, `bounds`. | AST schema cannot freeze. |
+| [G4](https://github.com/developerz-ai/tessera/issues/8) | §2.1 resolves the eight non-formula productions: `store`, `surface`, `app`, `use`, `constraints`, `pat`, `place`, `bounds`, with boundary cases and syntactic AST requirements in §2.2. Only `formula` remains outstanding, delegated to S4/[#14](https://github.com/developerz-ai/tessera/issues/14), including proof goals. Retain this row until formula lands; #8 is not fully closed. | Formula syntax still blocks AST schema freeze; the scaffold has no implemented AST schema to validate. |
 | [G5](https://github.com/developerz-ai/tessera/issues/9) | `needs` allows only `Ident ":" Ident`, but §6 uses parameterized capabilities (`net.listen(port)`, `fs(path)`, `store:Db`). | Grammar contradicts §6. |
 | [G6](https://github.com/developerz-ai/tessera/issues/10) | Literal collisions: date `2026-10-22` vs subtraction, duration `7d` vs identifier, id `#12` — and how `#12` gets its `T` in `Id<T>`. | Lexer rules and typing of id literals. |
 
