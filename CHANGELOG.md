@@ -10,3 +10,6 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Cargo workspace: one crate per work package, tier-enforced (`cargo xtask boundaries`).
 - `tessera` CLI scaffold listing every spec command with its milestone; `--json` diagnostics.
 - Gate (`bin/check`), CI, GitHub Pages site, agent setup (`CLAUDE.md`, `.claude/`).
+
+### Changed
+- Spec §2 lexical status: `return` and `scope` are reserved; `in`, `or`, `key`, `index`, `bound`, `as`, `fail`, `fails`, `where`, `matching`, `unless` and `is` are contextual, each with the one position where it is a keyword; the words §2 enumerates for constructs whose production is still open (G2, G4, S4) are not classified (15 of them were keywords in the previous §2 and are de-classified here), while `forall`, `comptime`, `is`, `in`, `scope` and `as` are classified although their production is still open ([#5](https://github.com/developerz-ai/tessera/issues/5)).

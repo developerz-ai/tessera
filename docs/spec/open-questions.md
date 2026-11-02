@@ -15,7 +15,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
-| [G1](https://github.com/developerz-ai/tessera/issues/5) | Words used as syntax but missing from the keyword list: `return`, `in`, `or`, `key`, `index`, `bound`, `scope`, `as`. | Reserved or contextual? Decides the lexer. |
 | [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `output`, `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
 | [G3](https://github.com/developerz-ai/tessera/issues/7) | Statement separator: whitespace is insignificant, yet every example separates statements by newline only (and `surface cli` uses `;`). | Without a terminator, `a = b\nc = d` has more than one parse. |
 | [G4](https://github.com/developerz-ai/tessera/issues/8) | No productions for `store`, `surface`, `app`, `use`, `formula`, `constraints`, `pat`, `place`, `bounds`. | AST schema cannot freeze. |
