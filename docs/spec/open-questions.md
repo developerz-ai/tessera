@@ -7,7 +7,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 | ID | Question | Blocks |
 |---|---|---|
 | [D1](https://github.com/developerz-ai/tessera/issues/1) | Postgres in v0.1, or SQLite only until later? | WP E store trait shape |
-| [D2](https://github.com/developerz-ai/tessera/issues/2) | Confirm UTC-only `time` for v0.1. | stdlib `time`, `Date` literal semantics |
 | [D3](https://github.com/developerz-ai/tessera/issues/3) | Exact decidable fragment for `T where p` and laws. | WP B refinement checking, WP D encoding |
 | [D4](https://github.com/developerz-ai/tessera/issues/4) | Does `tessera fill` ship in v0.1? | WP K scope, CLI table |
 
