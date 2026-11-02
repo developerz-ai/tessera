@@ -78,6 +78,7 @@ pre, code { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga
 pre { margin: 0; font: 400 0.86rem/1.65 "JetBrains Mono", monospace; white-space: pre; }
 .k { color: var(--code-key); } .t { color: var(--code-type); } .s { color: var(--code-str); } .c { color: var(--code-dim); }
 .verdict { display: inline-block; margin-top: 16px; font: 600 0.8rem/1 "JetBrains Mono", monospace; padding: 6px 10px; border-radius: 2px; background: var(--terracotta); color: #fbf6ee; }
+.panel-cap { margin: 14px 0 0; font: 400 0.75rem/1.4 "JetBrains Mono", monospace; color: var(--code-dim); }
 
 .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 3px solid var(--ink); }
 .three > div { padding: 28px 28px 8px 0; }
@@ -163,9 +164,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div class="pair">
       <div class="panel">
         <h3>todo.tes</h3>
-<pre><span class="k">rule</span> complete(by: <span class="t">Principal</span>, id: <span class="t">Id</span>&lt;<span class="t">Task</span>&gt;) {
+<pre><span class="k">fixture</span> bob: <span class="t">Id</span>&lt;<span class="t">User</span>&gt; = #1 : <span class="t">Id</span>&lt;<span class="t">User</span>&gt;;
+<span class="k">fixture</span> alice_task: <span class="t">Id</span>&lt;<span class="t">Task</span>&gt; = #12 : <span class="t">Id</span>&lt;<span class="t">Task</span>&gt;;
+
+<span class="k">rule</span> complete(by: <span class="t">Id</span>&lt;<span class="t">User</span>&gt;, id: <span class="t">Id</span>&lt;<span class="t">Task</span>&gt;) {
   <span class="k">let</span> t = tasks[id] <span class="k">or fail</span> <span class="t">NotFound</span>;
-  <span class="c">// require t.owner == by.id or fail NotFound;</span>
+  <span class="c">// require t.owner == by or fail NotFound;</span>
   tasks[id].status = <span class="t">Done</span>(clock.now)
     <span class="k">unless</span> t.status <span class="k">is</span> <span class="t">Done</span>;
 }
@@ -176,6 +180,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <span class="k">prove</span> complete(by, id) <span class="k">is</span> idempotent;
 <span class="k">example</span> complete(bob, alice_task) <span class="k">fails</span> <span class="t">NotFound</span>;</pre>
+        <p class="panel-cap">every example input comes from a fixture declaration</p>
       </div>
       <div class="panel">
         <h3>tessera check --json</h3>
@@ -188,7 +193,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <span class="s">"call"</span>:   <span class="s">"complete(by: bob, id: 1)"</span>,
     <span class="s">"effect"</span>: <span class="s">"tasks[1].status changed by bob"</span>
   },
-  <span class="s">"hint"</span>: <span class="s">"add `require t.owner == by.id
+  <span class="s">"hint"</span>: <span class="s">"add `require t.owner == by
            or fail NotFound;`"</span> }</pre>
         <span class="verdict">refuted</span>
       </div>

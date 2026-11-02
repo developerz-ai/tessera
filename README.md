@@ -31,9 +31,12 @@ Tessera is a declarative, deterministic language for the **logic layer** of appl
 The compiler derives the implementation, runs an SMT solver over your laws, and either **proves** them or returns a **concrete failing state and call**. Same state and inputs give the same outputs, bit for bit, on every backend.
 
 ```tessera
-rule complete(by: Principal, id: Id<Task>) {
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+rule complete(by: Id<User>, id: Id<Task>) {
   let t = tasks[id] or fail NotFound;
-  require t.owner == by.id or fail NotFound;
+  require t.owner == by or fail NotFound;
   tasks[id].status = Done(clock.now) unless t.status is Done;
 }
 
@@ -42,13 +45,15 @@ prove complete(by, id) is idempotent;
 example complete(bob, alice_task) fails NotFound;
 ```
 
+Every argument an `example` passes is a `fixture` declaration — a named, module-local, typed, deterministic value — so every example input has a declared origin.
+
 Drop the `require` line and an isolation law (only an owner changes their tasks) fails with a counterexample, as JSON an agent can act on:
 
 ```json
 { "code": "E-LAW-001", "law": "todo.isolation", "rule": "todo.complete",
   "counterexample": { "state": { "tasks": [ { "id": 1, "owner": "alice" } ] },
                       "call": "complete(by: bob, id: 1)" },
-  "hint": "add `require t.owner == by.id or fail NotFound;`" }
+  "hint": "add `require t.owner == by or fail NotFound;`" }
 ```
 
 ## Why
