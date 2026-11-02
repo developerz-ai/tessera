@@ -32,11 +32,16 @@ On every fetch the compiler checks out the commit, rebuilds the IR, and compares
 ```text
 tessera release 2.2.0
   1. full check: all laws proven, examples pass, parity green
-  2. compat diff vs previous tag: removed or changed signatures, weakened laws,
-     or new capabilities need a major bump, otherwise release is blocked
-  3. writes tessera.release.json (IR hash, capabilities, law and public-surface digest)
+  2. compat diff vs previous tag: removed or changed public signatures, weakened laws,
+     or any changed public rule capability set need a major bump, otherwise release is blocked
+  3. writes tessera.release.json (IR hash, declared public rule capability sets,
+     law and public-surface digest)
   4. creates a signed annotated tag v2.2.0 and pushes it
 ```
+
+Capability compatibility MUST follow [v0.1 §6](v0.1.md#6-effects-and-capabilities) and the normative [§8 compatibility rule](v0.1.md#8-packages-hashing-and-loading): compare each public rule's declared capability set by resolved capability identity, not local binding names or inferred body usage. Additions, removals and replacements MUST require a major bump; reordering alone is not a capability-set change. Unused declared capabilities remain in the signature and release metadata. Removing one is therefore not a compatible release merely because it reduces required power.
+
+Release metadata MUST expose these declared sets per public rule using resolved capability identities, so callers can check requirement coverage and compatibility tooling can compare contracts without inspecting dependency bodies. Renaming a local binding without changing its resolved identity does not change the declared set or its normalized hash; source order is not semantic set order. This metadata does not grant capabilities: the application's `[grant]` table still limits dependencies, and insufficient grants fail checking and the build. If compatibility cannot be decided, release MUST fail safe and require a major bump, as in §8.
 
 CI can run this on merge. No upload step exists, so the git host is the registry.
 
