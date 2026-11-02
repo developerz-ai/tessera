@@ -16,12 +16,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
 
-## Semantics (spec §4–§5)
-
-| ID | Gap | Why it blocks |
-|---|---|---|
-| [S6](https://github.com/developerz-ai/tessera/issues/16) | Variant narrowing: `t.status is Done => t.status.at` needs flow typing after `is`. Specified? | WP B |
-
 ## Packages
 
 | ID | Gap | Why it blocks |
