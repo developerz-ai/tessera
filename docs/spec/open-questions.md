@@ -15,8 +15,7 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
-| [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `output`, `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
-| [G5](https://github.com/developerz-ai/tessera/issues/9) | `needs` allows only `Ident ":" Ident`, but §6 uses parameterized capabilities (`net.listen(port)`, `fs(path)`, `store:Db`). | Grammar contradicts §6. |
+| [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
 
 ## Semantics (spec §4–§5)
 
