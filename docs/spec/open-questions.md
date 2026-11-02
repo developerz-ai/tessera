@@ -16,7 +16,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
 | [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `output`, `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
-| [G4](https://github.com/developerz-ai/tessera/issues/8) | No productions for `store`, `surface`, `app`, `use`, `formula`, `constraints`, `pat`, `place`, `bounds`. | AST schema cannot freeze. |
 | [G5](https://github.com/developerz-ai/tessera/issues/9) | `needs` allows only `Ident ":" Ident`, but §6 uses parameterized capabilities (`net.listen(port)`, `fs(path)`, `store:Db`). | Grammar contradicts §6. |
 | [G6](https://github.com/developerz-ai/tessera/issues/10) | Literal collisions: date `2026-10-22` vs subtraction, duration `7d` vs identifier, id `#12` — and how `#12` gets its `T` in `Id<T>`. | Lexer rules and typing of id literals. |
 
@@ -26,7 +25,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 |---|---|---|
 | [S1](https://github.com/developerz-ai/tessera/issues/11) | `view` vs `fact`: the spec gives them one row and one production. What differs? | WP B, C |
 | [S2](https://github.com/developerz-ai/tessera/issues/12) | Rule-level `needs`: §6 says needs are part of a rule's signature, but the `rule` production has no needs clause. Inferred from the body? | WP B signatures, WP J compat diff |
-| [S4](https://github.com/developerz-ai/tessera/issues/14) | `formula` grammar for `law`/`prove`, including `is idempotent` and cost goals (`time <= 5ms`). | WP A, D |
 | [S5](https://github.com/developerz-ai/tessera/issues/15) | `example` fixtures: where do `bob` and `alice_task` come from? | Corpus format (M0) |
 | [S6](https://github.com/developerz-ai/tessera/issues/16) | Variant narrowing: `t.status is Done => t.status.at` needs flow typing after `is`. Specified? | WP B |
 | [S7](https://github.com/developerz-ai/tessera/issues/17) | Numerics: `Decimal(n)` division and mixed precision; runtime out-of-range on refined `Int` from external input — compile error is impossible there, so which failure? | WP B, C |
