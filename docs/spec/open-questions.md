@@ -16,7 +16,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 | ID | Gap | Why it blocks WP A |
 |---|---|---|
 | [G2](https://github.com/developerz-ai/tessera/issues/6) | Keywords with no production: `output`, `schedule`, `assume`, `hint`, `foreign`, `plugin`, `never`, `old`, `exists`, `match`, `then` (as a statement). | Nothing to parse them into. |
-| [G3](https://github.com/developerz-ai/tessera/issues/7) | Statement separator: whitespace is insignificant, yet every example separates statements by newline only (and `surface cli` uses `;`). | Without a terminator, `a = b\nc = d` has more than one parse. |
 | [G4](https://github.com/developerz-ai/tessera/issues/8) | No productions for `store`, `surface`, `app`, `use`, `formula`, `constraints`, `pat`, `place`, `bounds`. | AST schema cannot freeze. |
 | [G5](https://github.com/developerz-ai/tessera/issues/9) | `needs` allows only `Ident ":" Ident`, but §6 uses parameterized capabilities (`net.listen(port)`, `fs(path)`, `store:Db`). | Grammar contradicts §6. |
 | [G6](https://github.com/developerz-ai/tessera/issues/10) | Literal collisions: date `2026-10-22` vs subtraction, duration `7d` vs identifier, id `#12` — and how `#12` gets its `T` in `Id<T>`. | Lexer rules and typing of id literals. |

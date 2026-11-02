@@ -164,18 +164,18 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div class="panel">
         <h3>todo.tes</h3>
 <pre><span class="k">rule</span> complete(by: <span class="t">Principal</span>, id: <span class="t">Id</span>&lt;<span class="t">Task</span>&gt;) {
-  <span class="k">let</span> t = tasks[id] <span class="k">or fail</span> <span class="t">NotFound</span>
-  <span class="c">// require t.owner == by.id or fail NotFound</span>
+  <span class="k">let</span> t = tasks[id] <span class="k">or fail</span> <span class="t">NotFound</span>;
+  <span class="c">// require t.owner == by.id or fail NotFound;</span>
   tasks[id].status = <span class="t">Done</span>(clock.now)
-    <span class="k">unless</span> t.status <span class="k">is</span> <span class="t">Done</span>
+    <span class="k">unless</span> t.status <span class="k">is</span> <span class="t">Done</span>;
 }
 
 <span class="k">law</span> done_once: <span class="k">forall</span> t <span class="k">in</span> tasks.
-  t.status <span class="k">is</span> <span class="t">Done</span> =&gt; t.status.at &gt;= t.created
+  t.status <span class="k">is</span> <span class="t">Done</span> =&gt; t.status.at &gt;= t.created;
 <span class="c">// law isolation: only an owner changes their tasks</span>
 
-<span class="k">prove</span> complete(by, id) <span class="k">is</span> idempotent
-<span class="k">example</span> complete(bob, alice_task) <span class="k">fails</span> <span class="t">NotFound</span></pre>
+<span class="k">prove</span> complete(by, id) <span class="k">is</span> idempotent;
+<span class="k">example</span> complete(bob, alice_task) <span class="k">fails</span> <span class="t">NotFound</span>;</pre>
       </div>
       <div class="panel">
         <h3>tessera check --json</h3>
@@ -189,7 +189,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <span class="s">"effect"</span>: <span class="s">"tasks[1].status changed by bob"</span>
   },
   <span class="s">"hint"</span>: <span class="s">"add `require t.owner == by.id
-           or fail NotFound`"</span> }</pre>
+           or fail NotFound;`"</span> }</pre>
         <span class="verdict">refuted</span>
       </div>
     </div>
