@@ -19,5 +19,4 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 
 | ID | Gap | Why it blocks |
 |---|---|---|
-| [K1](https://github.com/developerz-ai/tessera/issues/18) | §8/§11 list `publish`; [packages.md](packages.md) has no upload step and adds `tessera release`. Drop `publish`? | CLI contract |
 | [K2](https://github.com/developerz-ai/tessera/issues/19) | WP J says "registry"; packages.md removes the central registry. Rescope WP J to resolver + lockfile + audit + optional discovery index? | WP J scope |
