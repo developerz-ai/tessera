@@ -17,6 +17,4 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 
 ## Packages
 
-| ID | Gap | Why it blocks |
-|---|---|---|
-| [K2](https://github.com/developerz-ai/tessera/issues/19) | WP J says "registry"; packages.md removes the central registry. Rescope WP J to resolver + lockfile + audit + optional discovery index? | WP J scope |
+K2 resolved in [spec §13](v0.1.md#13-swarm-work-packages-and-milestones) ([#19](https://github.com/developerz-ai/tessera/issues/19)): WP J owns registry-free git resolution, hashing, content-addressed storage, lockfile and audit; discovery is an optional git short-name-to-URL index, not required for dependency resolution.
