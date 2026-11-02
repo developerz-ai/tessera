@@ -25,7 +25,6 @@ Spec gaps found while scaffolding, `As of 2026-10-22`. Swarm rule (spec §13): *
 |---|---|---|
 | [S1](https://github.com/developerz-ai/tessera/issues/11) | `view` vs `fact`: the spec gives them one row and one production. What differs? | WP B, C |
 | [S2](https://github.com/developerz-ai/tessera/issues/12) | Rule-level `needs`: §6 says needs are part of a rule's signature, but the `rule` production has no needs clause. Inferred from the body? | WP B signatures, WP J compat diff |
-| [S4](https://github.com/developerz-ai/tessera/issues/14) | `formula` grammar for `law`/`prove`, including `is idempotent` and cost goals (`time <= 5ms`). Carries the `formula` production split off [G4](https://github.com/developerz-ai/tessera/issues/8) by the §2.1 amendment: #8's eight non-formula productions are delivered there, and #8 stays open on this item. | WP A, D; formula syntax blocks the AST schema freeze. |
 | [S5](https://github.com/developerz-ai/tessera/issues/15) | `example` fixtures: where do `bob` and `alice_task` come from? | Corpus format (M0) |
 | [S6](https://github.com/developerz-ai/tessera/issues/16) | Variant narrowing: `t.status is Done => t.status.at` needs flow typing after `is`. Specified? | WP B |
 | [S7](https://github.com/developerz-ai/tessera/issues/17) | Numerics: `Decimal(n)` division and mixed precision; runtime out-of-range on refined `Int` from external input — compile error is impossible there, so which failure? | WP B, C |
