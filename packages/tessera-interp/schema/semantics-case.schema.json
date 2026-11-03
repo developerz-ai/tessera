@@ -28,7 +28,7 @@
       "items": { "$ref": "#/$defs/call" }
     },
     "expected_state": {
-      "description": "The persistent state after the last call. On an aborted call the state is unchanged (spec §5.1), so expected_state equals initial_state for the failed tail of a case.",
+      "description": "The persistent state after the last call. An aborted call leaves the state exactly as it was immediately before that call (spec §5.1): a failed call preserves the state its predecessor committed, which is `initial_state` only when no earlier call changed it.",
       "$ref": "#/$defs/state"
     },
     "expected_outputs": {
@@ -78,7 +78,7 @@
       "additionalProperties": { "$ref": "#/$defs/value" }
     },
     "value": {
-      "description": "A closed, deterministic value. `Int` is a JSON integer, `Decimal` a JSON number, `Bool` a JSON boolean, `Text` a JSON string, `Date`/`Duration`/`Instant` an RFC 3339 / ISO 8601 string, an id literal an object tagged `id`, and a record or list a JSON object or array. There is no `null` value: a missing value is absent, never null.",
+      "description": "A closed, deterministic value. `Int` is a JSON integer, `Decimal` a JSON number, `Bool` a JSON boolean, `Text` a JSON string, `Date`/`Duration`/`Instant` an RFC 3339 / ISO 8601 string, an id literal the tagged object `{ \"id\": 12, \"type\": \"Id<Task>\" }`, and a record or list a JSON object or array. There is no `null` value: a missing value is absent, never null.",
       "anyOf": [
         { "type": "integer" },
         { "type": "number" },
@@ -90,27 +90,42 @@
       ]
     },
     "recordValue": {
-      "description": "A record value: the structured element a declared output stream carries (`Stream<Entry>`). Its fields are named values, as in a state row.",
+      "description": "A record value: the structured element a declared output stream carries (`Stream<Entry>`). Its fields are named values, as in a state row. A record never carries a `type` field holding an `Id<T>` ascription: that shape is the id literal, so the two representations are disjoint and a malformed id literal cannot pass as a record.",
       "type": "object",
       "minProperties": 1,
       "propertyNames": { "$ref": "#/$defs/identifier" },
-      "additionalProperties": { "$ref": "#/$defs/value" }
+      "additionalProperties": { "$ref": "#/$defs/value" },
+      "not": {
+        "description": "The reserved id-literal shape: a `type` field holding an `Id<T>` ascription marks an id literal, never a record.",
+        "required": ["type"],
+        "properties": { "type": { "$ref": "#/$defs/idTypeName" } }
+      }
     },
     "idValue": {
-      "description": "An id literal (`#12`, with its declared type ascription) as a tagged object, so an id is distinguishable from a plain `Text`.",
+      "description": "An id literal (`#12`, with its declared type ascription) as a tagged object, so an id is distinguishable from a plain `Text`. An id literal carries an `Id<T>` ascription and nothing else, and the number it carries is not negative.",
       "type": "object",
-      "required": ["id"],
+      "required": ["id", "type"],
       "additionalProperties": false,
       "properties": {
         "id": { "type": "integer", "minimum": 0 },
-        "type": { "$ref": "#/$defs/typeName" }
+        "type": { "$ref": "#/$defs/idTypeName" }
       }
     },
-    "typeName": {
-      "description": "The declared type of an id literal: a type name, optionally with one type argument (`Id<Task>`), as the spec writes it (§3).",
+    "idTypeName": {
+      "description": "The declared type of an id literal: an `Id<T>` ascription, as the spec writes it (§3). An id's type is always an `Id<T>` — an `Id<Task>` is not an `Id<User>`.",
       "type": "string",
       "minLength": 1,
-      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(<[A-Za-z_][A-Za-z0-9_]*>)?$"
+      "pattern": "^Id<[A-Za-z_][A-Za-z0-9_]*>$"
+    },
+    "instant": {
+      "description": "An `Instant`: a point in time, written as an RFC 3339 date-time (`2026-10-22T09:15:00Z`). The date it carries must be a real calendar date — the conformance suite checks that, because a pattern cannot.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$"
+    },
+    "calendarDate": {
+      "description": "A `Date`: a zone-independent proleptic-Gregorian calendar date, written `YYYY-MM-DD` (spec §2). The day must exist in its month — the conformance suite checks that, because a pattern cannot.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
     },
     "call": {
       "description": "One rule call. Its result is exactly one of `Ok(v)` or `Failed(Name)`; a call with neither or with both is invalid.",
@@ -177,11 +192,11 @@
           "$ref": "#/$defs/identifier"
         },
         "reading": {
-          "description": "For a `clock` input, which reading it is: `now` (an Instant) or `today` (the UTC calendar Date).",
+          "description": "For a `clock` input, which reading it is: `now` (an Instant) or `today` (the UTC calendar Date). The reading fixes the type of `value`.",
           "enum": ["now", "today"]
         },
         "value": {
-          "description": "The logged value of the input. Replaying the log reproduces the run exactly (spec §5.6).",
+          "description": "The logged value of the input. Replaying the log reproduces the run exactly (spec §5.6). A `clock` input's value is typed by its `reading`: an Instant for `now`, a calendar Date for `today`.",
           "$ref": "#/$defs/value"
         }
       },
@@ -193,6 +208,20 @@
         {
           "if": { "properties": { "kind": { "const": "clock" } }, "required": ["kind"] },
           "then": { "required": ["capability"] }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "clock" }, "reading": { "const": "now" } },
+            "required": ["kind", "reading"]
+          },
+          "then": { "properties": { "value": { "$ref": "#/$defs/instant" } } }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "clock" }, "reading": { "const": "today" } },
+            "required": ["kind", "reading"]
+          },
+          "then": { "properties": { "value": { "$ref": "#/$defs/calendarDate" } } }
         }
       ]
     },

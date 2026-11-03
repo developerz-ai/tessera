@@ -71,7 +71,7 @@ parity gate compares them on exactly these cases.
 | `module` | yes | The module the case runs against. A name is a label, not identity (P7). |
 | `initial_state` | yes | The seeded persistent state: `tables`, each a list of rows. A table absent from `tables` starts empty. |
 | `calls` | yes | The rule calls, in order. At least one. |
-| `expected_state` | yes | The persistent state after the last call. |
+| `expected_state` | yes | The persistent state after the last call. If the last call aborted, this is the state immediately before that call (spec §5.1) — `initial_state` only when no earlier call changed the state. |
 | `expected_outputs` | yes | The delivered output elements, in delivery order. May be empty. |
 
 ### `initial_state` and `expected_state`
@@ -81,7 +81,10 @@ declared `state` table (spec §4); a row is an object whose fields are the
 closed, deterministic literals of spec §2–§3, so a row is JSON-representable
 and replays identically. An id literal is the tagged object
 `{ "id": 12, "type": "Id<Task>" }`, so an id is distinguishable from a `Text`
-that happens to look like a number.
+that happens to look like a number. The two representations are disjoint: an
+id literal carries an `Id<T>` ascription and nothing else, and a record never
+carries a `type` field holding one — so a malformed id literal cannot pass as
+a record.
 
 A case never names a table that the module does not declare, and never carries
 a field the module does not declare in that table. Both are checked by the
@@ -104,8 +107,8 @@ Each call has:
 commit in a total order recorded in the input log (spec §5.5), and the case
 records that order. `index` MUST equal the call's position in the array; a case
 where the two disagree is malformed and is rejected. JSON Schema 2020-12 has no
-keyword for cross-item ordering, so this rule — and only this rule — is
-enforced by the conformance suite rather than by the schema. The suite is the
+keyword for cross-item ordering, so this rule — like the calendar rule below —
+is enforced by the conformance suite rather than by the schema. The suite is the
 reference implementation of this contract and ships with the schema, so the two
 cannot drift apart silently.
 
@@ -136,7 +139,7 @@ consumed, in consumption order.
 | Field | Required | Meaning |
 |---|---|---|
 | `kind` | yes | `clock`, `random`, `id` or `request`. |
-| `value` | yes | The logged value. |
+| `value` | yes | The logged value. A `clock` input's value is typed by its `reading` (see below). |
 | `capability` | for `clock` | The capability binding the reading came from (`clock`). |
 | `reading` | for `clock` | `now` (an Instant) or `today` (the UTC calendar Date). |
 
@@ -145,6 +148,14 @@ and `today` are separate readings, are separately logged, and are not required
 to be simultaneous (spec §6). `today` is the proleptic-Gregorian calendar date
 of the reading in UTC; no host time zone or DST rule may affect it, and a
 replayed reading yields the same date.
+
+The reading also fixes the type of the logged value: `now` carries an
+`Instant`, written as an RFC 3339 date-time (`2026-10-22T09:15:00Z`); `today`
+carries the UTC calendar `Date`, written `YYYY-MM-DD` (`2026-10-22`). The
+schema enforces that shape, so a `now` reading logged as a boolean, or as a
+bare date, is rejected. The calendar is the suite's rule: a date must exist in
+its month in the proleptic Gregorian calendar (spec §2), so `2026-02-30` is
+rejected as well — a JSON Schema pattern cannot say that.
 
 Replaying the log reproduces the run exactly (spec §5.6). The case therefore
 carries the values themselves: a backend that consults the wall clock, the
@@ -168,8 +179,9 @@ changes, checks the laws that mention touched state against the proposed
 post-state, and commits or aborts as a whole. On abort: all proposed writes and
 all buffered outputs are discarded, and no success value is published. So for a
 call that ends in `Failed(Name)`, the state after the call equals the state
-before it, and the outputs buffered by that call do not appear in
-`expected_outputs`.
+immediately before it — the state its predecessor committed, which is
+`initial_state` only when no earlier call changed the state — and the outputs
+buffered by that call do not appear in `expected_outputs`.
 
 **Failures are values (spec §5.2).** A caller sees `Ok(v)` or `Failed(Name)`.
 Every failure obeys the same atomic abort and input-log retention rules.
@@ -191,9 +203,9 @@ every buffered element along with the proposed state writes, and the input log
 is unchanged by that discard.
 
 **Determinism (spec §1, P1).** Same case, same result, on every backend, bit
-for bit. The conformance suite asserts that a case reads back identically and
-validates identically on a second read: no map iteration, no clock and no
-randomness may reach the result.
+for bit. The conformance suite asserts that a case reads back as identical
+bytes and validates identically on a second read: no map iteration, no clock
+and no randomness may reach the result.
 
 ## The conformance suite
 
@@ -208,8 +220,11 @@ that ships with this contract. It:
 4. asserts that the three cases collectively cover an `Ok(v)` result, a
    `Failed(Name)` result, and logged `clock`, `random` and `id` inputs;
 5. rejects, one rule at a time, a case with a missing required field, a
-   mistagged result, a misordered call sequence, a malformed input log, and a
-   malformed state or output.
+   mistagged result, a misordered call sequence, a malformed input log, a
+   malformed tagged id, and a malformed state or output;
+6. rejects a clock reading whose value does not match its `reading` — a
+   boolean for `now`, an `Instant` for `today` — and one whose date does not
+   exist on the calendar.
 
 Run it with:
 
