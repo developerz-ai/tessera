@@ -15,3 +15,10 @@ workspace = true
 [dependencies]
 tessera-diag.workspace = true
 tessera-ir.workspace = true
+
+[dev-dependencies]
+# The semantics test suite is this crate's frozen interface; the conformance
+# suite in tests/semantics_schema.rs validates the corpus cases against the
+# schema in schema/semantics-case.schema.json.
+jsonschema.workspace = true
+serde_json.workspace = true

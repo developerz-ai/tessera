@@ -1,0 +1,56 @@
+{
+  "module": "todo",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "title": "write the semantics suite",
+          "status": "Open"
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "complete",
+      "args": [
+        { "id": 2, "type": "Id<User>" },
+        { "id": 12, "type": "Id<Task>" }
+      ],
+      "inputs": [
+        {
+          "kind": "request",
+          "value": {
+            "id": { "id": 12, "type": "Id<Task>" },
+            "by": { "id": 2, "type": "Id<User>" }
+          }
+        },
+        {
+          "kind": "clock",
+          "capability": "clock",
+          "reading": "now",
+          "value": "2026-10-22T09:20:00Z"
+        }
+      ],
+      "result": {
+        "failed": "NotFound"
+      }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "title": "write the semantics suite",
+          "status": "Open"
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}
