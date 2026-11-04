@@ -32,6 +32,11 @@ tessera-surface = { path = "packages/tessera-surface" }
 # Third-party. Add here, then `dep.workspace = true` in the crate. Reuse list: spec §13.
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# JSON Schema validation for the semantics test suite (WP C's frozen interface).
+# Reuse rule (spec §13): a validator is not something to hand-write. Default
+# features are off — the case schema is self-contained, so remote/file `$ref`
+# resolution and the TLS stack are not needed.
+jsonschema = { version = "0.60", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

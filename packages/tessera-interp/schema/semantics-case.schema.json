@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/developerz-ai/tessera/schema/semantics-case.schema.json",
+  "title": "Tessera semantics case",
+  "description": "One semantics case for the reference interpreter (spec §5): seeded initial state, an ordered sequence of rule calls with their logged external inputs, the tagged result of each call, the expected final state and the expected ordered outputs. Provisional: the AST schema, Core IR schema and diagnostics JSON are not frozen yet (spec §13 freeze order), so this schema is a working contract and pre-freeze rework is accepted. See semantics-case.contract.md.",
+  "type": "object",
+  "required": [
+    "module",
+    "initial_state",
+    "calls",
+    "expected_state",
+    "expected_outputs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "module": {
+      "description": "Name of the module the case runs against. A case is scoped to one module; names are labels, not identity (spec §1, P7).",
+      "$ref": "#/$defs/identifier"
+    },
+    "initial_state": {
+      "description": "The seeded persistent state the case starts from. Every declared `state` table is seeded here; a table absent from `tables` starts empty.",
+      "$ref": "#/$defs/state"
+    },
+    "calls": {
+      "description": "The rule calls to execute, in order. Array order IS the execution order (spec §5.5: serial commits in the order recorded in the input log). Each call's `index` MUST equal its position in this array.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/call" }
+    },
+    "expected_state": {
+      "description": "The persistent state after the last call. An aborted call leaves the state exactly as it was immediately before that call (spec §5.1): a failed call preserves the state its predecessor committed, which is `initial_state` only when no earlier call changed it.",
+      "$ref": "#/$defs/state"
+    },
+    "expected_outputs": {
+      "description": "The output elements delivered to the surface, in delivery order: statement source order within a call, then the serial commit order across calls (spec §5, Output). Elements buffered by an aborted call are discarded and MUST NOT appear here.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/output" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "qualifiedName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+    },
+    "failureName": {
+      "description": "The name of a failure. `LawViolation`, `DivisionByZero` and `RefinementViolation` are reserved by the spec (§5.2) and MUST NOT be used as user-defined failure names; a case MAY still observe them, because they are what the runtime returns.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "state": {
+      "description": "The persistent state: the rows of each declared `state` table. Tables are named; a table with no rows is written as an empty array.",
+      "type": "object",
+      "required": ["tables"],
+      "additionalProperties": false,
+      "properties": {
+        "tables": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/row" }
+          }
+        }
+      }
+    },
+    "row": {
+      "description": "One row of a `state` table. Field values are the closed literals of spec §2–§3, so a row is JSON-representable and replays identically.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/value" }
+    },
+    "value": {
+      "description": "A closed, deterministic value. `Int` is a JSON integer, `Decimal` a JSON number, `Bool` a JSON boolean, `Text` a JSON string, `Date`/`Duration`/`Instant` an RFC 3339 / ISO 8601 string, an id literal the tagged object `{ \"id\": 12, \"type\": \"Id<Task>\" }`, and a record or list a JSON object or array. There is no `null` value: a missing value is absent, never null.",
+      "anyOf": [
+        { "type": "integer" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "string" },
+        { "$ref": "#/$defs/idValue" },
+        { "$ref": "#/$defs/recordValue" },
+        { "type": "array", "items": { "$ref": "#/$defs/value" } }
+      ]
+    },
+    "recordValue": {
+      "description": "A record value: the structured element a declared output stream carries (`Stream<Entry>`). Its fields are named values, as in a state row. A record never carries a `type` field holding an `Id<T>` ascription: that shape is the id literal, so the two representations are disjoint and a malformed id literal cannot pass as a record.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/value" },
+      "not": {
+        "description": "The reserved id-literal shape: a `type` field holding an `Id<T>` ascription marks an id literal, never a record.",
+        "required": ["type"],
+        "properties": { "type": { "$ref": "#/$defs/idTypeName" } }
+      }
+    },
+    "idValue": {
+      "description": "An id literal (`#12`, with its declared type ascription) as a tagged object, so an id is distinguishable from a plain `Text`. An id literal carries an `Id<T>` ascription and nothing else, and the number it carries is not negative.",
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "integer", "minimum": 0 },
+        "type": { "$ref": "#/$defs/idTypeName" }
+      }
+    },
+    "idTypeName": {
+      "description": "The declared type of an id literal: an `Id<T>` ascription, as the spec writes it (§3). An id's type is always an `Id<T>` — an `Id<Task>` is not an `Id<User>`.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^Id<[A-Za-z_][A-Za-z0-9_]*>$"
+    },
+    "instant": {
+      "description": "An `Instant`: a point in time, written as an RFC 3339 date-time (`2026-10-22T09:15:00Z`). The date it carries must be a real calendar date — the conformance suite checks that, because a pattern cannot.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$"
+    },
+    "calendarDate": {
+      "description": "A `Date`: a zone-independent proleptic-Gregorian calendar date, written `YYYY-MM-DD` (spec §2). The day must exist in its month — the conformance suite checks that, because a pattern cannot.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "call": {
+      "description": "One rule call. Its result is exactly one of `Ok(v)` or `Failed(Name)`; a call with neither or with both is invalid.",
+      "type": "object",
+      "required": ["index", "rule", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "description": "Position of this call in the case's `calls` array, counted from 0. The array order and these indices MUST agree.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "rule": {
+          "description": "The rule being called.",
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "args": {
+          "description": "The call arguments, in source order.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/value" }
+        },
+        "inputs": {
+          "description": "The external inputs this call consumed, in the order they were logged and consumed. Every clock reading, random draw, id generation and external request is an input (spec §5.6); the log is appended before use, so an input consumed by an aborted call is still logged here.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/input" }
+        },
+        "result": {
+          "description": "The call outcome: `Ok` with the published success value, or `Failed` with the named failure. Exactly one tag is present.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ok": {
+              "description": "The success value published by the call. A rule that returns nothing publishes the unit value.",
+              "$ref": "#/$defs/value"
+            },
+            "failed": {
+              "description": "The named failure. The call aborted: no writes, no outputs, no success value (spec §5.1).",
+              "$ref": "#/$defs/failureName"
+            }
+          },
+          "oneOf": [
+            {
+              "required": ["ok"]
+            },
+            {
+              "required": ["failed"]
+            }
+          ]
+        }
+      }
+    },
+    "input": {
+      "description": "One logged external input.",
+      "type": "object",
+      "required": ["kind", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "The kind of external input. `clock` is a clock reading, `random` a random draw, `id` an id generation, `request` an external request.",
+          "enum": ["clock", "random", "id", "request"]
+        },
+        "capability": {
+          "description": "The capability binding the input came from, when the spec gives it a binding name (`clock`, `rng`, `idgen`). Omitted for inputs that are not capability reads.",
+          "$ref": "#/$defs/identifier"
+        },
+        "reading": {
+          "description": "For a `clock` input, which reading it is: `now` (an Instant) or `today` (the UTC calendar Date). The reading fixes the type of `value`.",
+          "enum": ["now", "today"]
+        },
+        "value": {
+          "description": "The logged value of the input. Replaying the log reproduces the run exactly (spec §5.6). A `clock` input's value is typed by its `reading`: an Instant for `now`, a calendar Date for `today`.",
+          "$ref": "#/$defs/value"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "clock" } }, "required": ["kind"] },
+          "then": { "required": ["reading"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "clock" } }, "required": ["kind"] },
+          "then": { "required": ["capability"] }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "clock" }, "reading": { "const": "now" } },
+            "required": ["kind", "reading"]
+          },
+          "then": { "properties": { "value": { "$ref": "#/$defs/instant" } } }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "clock" }, "reading": { "const": "today" } },
+            "required": ["kind", "reading"]
+          },
+          "then": { "properties": { "value": { "$ref": "#/$defs/calendarDate" } } }
+        }
+      ]
+    },
+    "output": {
+      "description": "One delivered output element: the value appended to a declared output stream.",
+      "type": "object",
+      "required": ["stream", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "stream": {
+          "description": "The name of the declared output stream the element was appended to.",
+          "$ref": "#/$defs/identifier"
+        },
+        "value": {
+          "description": "The buffered element value.",
+          "$ref": "#/$defs/value"
+        }
+      }
+    }
+  }
+}
