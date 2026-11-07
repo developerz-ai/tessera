@@ -1,0 +1,27 @@
+module intake_domains @1;
+
+type Raw = { id: Id<Raw>, source: Text, payload: Text, received: Date };
+type Task = { id: Id<Task>, title: Text, status: Status, due: Maybe<Date> };
+type Status = Open | Done(at: Instant);
+type User = { id: Id<User>, name: Text };
+
+state raws: Table<Raw> key id;
+state tasks: Table<Task> key id;
+state users: Table<User> key id;
+output ledger: Stream<Entry>;
+type Entry = { task: Id<Task>, event: Text };
+
+needs clock: Clock;
+
+fixture raw_one: Id<Raw> = #3 : Id<Raw>;
+fixture task_one: Id<Task> = #12 : Id<Task>;
+
+rule intake(rid: Id<Raw>, tid: Id<Task>) {
+  let r = raws[rid] or fail NotFound;
+  new t: Task where t.id == tid, t.title == r.payload, t.status == Open, t.due == none;
+  output ledger += { task: tid, event: "intake" };
+}
+
+law intakes_close_stream: forall t in tasks. (t.status is Open) => (t.title != "");
+
+example intake(raw_one, task_one) fails NotFound;

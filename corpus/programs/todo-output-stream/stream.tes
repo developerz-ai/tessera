@@ -1,0 +1,24 @@
+module todo_output_stream @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type Entry = { task: Id<Task>, status: Text };
+
+state tasks: Table<Task> key id;
+output ledger: Stream<Entry>;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+rule complete(by: Id<User>, id: Id<Task>) needs clock {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+  output ledger += { task: id, status: "done" };
+}
+
+law done_only_empty: forall t in tasks. (t.status is Done) => (t.title != "");
+
+example complete(bob, alice_task) fails NotFound;

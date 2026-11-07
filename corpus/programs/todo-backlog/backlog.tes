@@ -1,0 +1,30 @@
+module todo_backlog @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant, due: Maybe<Date> };
+type User = { id: Id<User>, name: Text, token: Text };
+
+state tasks: Table<Task> key id;
+state users: Table<User> key id;
+output ledger: Stream<Entry>;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+fixture cutoff: Date = 2026-10-22;
+
+rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  require t.due is Some || (t.due.value < on) or fail Stale;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+  output ledger += { task: id, action: "archived" };
+  return id;
+}
+
+law archived_only_when_some: forall t in tasks. (t.status is Done) => (t.due is Some) with (t.owner in users);
+
+law named_bob: forall t in tasks. (t.owner.name in {"bob"}) => (t.status is Open);
+
+example archive(bob, alice_task, cutoff) fails NotFound;

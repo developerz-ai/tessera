@@ -1,0 +1,23 @@
+module todo_shard @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant, shard: Int };
+
+state segments: Table<Task> key id;
+state users: Table<User> key id;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture shard_task: Id<Task> = #12 : Id<Task>;
+fixture cutoff: Date = 2026-10-22;
+
+rule complete(by: Id<User>, id: Id<Task>) needs clock {
+  let t = segments[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  segments[id].status = Done(clock.now) unless t.status is Done;
+}
+
+law shard_completeness: forall t in segments. (t.shard == 1) => (t.status is Done) with (t.created < cutoff);
+
+example complete(bob, shard_task) fails NotFound;

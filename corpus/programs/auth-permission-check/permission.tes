@@ -1,0 +1,24 @@
+module auth_permission_check @1;
+
+type User = { id: Id<User>, name: Text, permission: Text };
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status };
+type Status = Open | Done(at: Instant);
+
+state users: Table<User> key id;
+state tasks: Table<Task> key id;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+rule complete(by: Id<User>, id: Id<Task>) needs clock {
+  require (users[by].permission == "tasks.write") or fail Forbidden;
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail Forbidden;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+}
+
+law admins_write: forall t in tasks. forall u in users. (t.status is Done) => (u.permission in {"tasks.write", "tasks.admin"}) or (u.name in {"bob", "alice"}) with (t.owner == u);
+
+example complete(bob, alice_task) fails NotFound;

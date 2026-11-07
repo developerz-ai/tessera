@@ -1,0 +1,26 @@
+module todo_archive @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type Entry = { task: Id<Task>, action: Text };
+
+state tasks: Table<Task> key id;
+output ledger: Stream<Entry>;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture done_task: Id<Task> = #12 : Id<Task>;
+fixture opened_on: Date = 2026-10-22;
+
+rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  require t.status is Done or fail NotComplete;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+  output ledger += { task: id, action: "archived" };
+}
+
+law archived_once_done: forall t in tasks. (t.status is Done) => (t.created < 2026-10-22);
+
+example archive(bob, done_task, opened_on) fails NotFound;

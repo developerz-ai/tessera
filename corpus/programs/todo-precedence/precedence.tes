@@ -1,0 +1,27 @@
+module todo_precedence @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type User = { id: Id<User>, name: Text };
+
+state tasks: Table<Task> key id;
+state users: Table<User> key id;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+law overdue_or_untitled: forall t in tasks. (t.created >= 2026-10-22) || (t.title == "") => (t.status is Open) or (t.status is Done);
+
+law named_open: forall t in tasks. (t.title in {"ship", "verify"}) => (t.status is Open) with (t.owner in users);
+
+law guarded_owner: forall t in tasks. (t.status is Done) => (t.owner in users) with (t.created >= 2026-10-22);
+
+example complete(bob, alice_task) fails NotFound;
+
+rule complete(by: Id<User>, id: Id<Task>) needs clock {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+}

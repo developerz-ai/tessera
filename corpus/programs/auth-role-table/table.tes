@@ -1,0 +1,24 @@
+module auth_role_table @1;
+
+type User = { id: Id<User>, name: Text, role: Text };
+type Entry = { user: Id<User>, granted: Text };
+
+state users: Table<User> key id;
+output ledger: Stream<Entry>;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_user: Id<User> = #12 : Id<User>;
+fixture admin_role: Text = "admin";
+
+rule grant(u: Id<User>, role: Text) {
+  let target = users[u] or fail NotFound;
+  users[u].role = role;
+  output ledger += { user: u, granted: role };
+  return target.role;
+}
+
+law roles_limited: forall u in users. (u.role == "admin") => (u.name in {"bob", "alice"});
+
+example grant(bob, admin_role) fails NotFound;
