@@ -8,10 +8,9 @@ state sessions: Table<Session> key token;
 
 needs clock: Clock;
 
-fixture bob: Id<User> = #1 : Id<User>;
-fixture bob_password: Text = "s3cret-botany";
 fixture bobs_name: Text = "Bob Botany";
 fixture wrong_password: Text = "hunter2";
+fixture wrong_name: Text = "Ann Acker";
 
 rule login(name: Text, attempt: Text) needs clock {
   let u = find(forall p in users. p.name == name) or fail NotFound;
@@ -23,3 +22,4 @@ rule login(name: Text, attempt: Text) needs clock {
 law one_session_per_user: forall s1 in sessions. forall s2 in sessions. ((s1.user == s2.user) && (s1.opened <= s2.opened)) => (s1.token <= s2.token);
 
 example login(bobs_name, wrong_password) fails NotFound;
+example login(wrong_name, wrong_password) fails NotFound;

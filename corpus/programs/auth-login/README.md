@@ -5,8 +5,9 @@ lookup and the password check. Uses the #15 fixture-origin rule twice: a `Text`
 fixture (`bobs_name`) for the rule's `name: Text` parameter, so an `example`
 (`login(bobs_name, wrong_password)`) passes args whose declared `Text` types
 match `login(name: Text, attempt: Text)` and exercises both anchor paths in one
-rule — never the `Id<User>` fixture `bob`, which is a type error for a `Text`
-parameter, and never a literal, which #15 forbids as an example argument.
+rule — and never literals, which #15 forbids as example arguments. Every
+fixture declared (`bobs_name`, `wrong_password`, `wrong_name`) is consumed by an
+example, and none is left unreferenced.
 
 The table lookup uses `find(forall p in users. p.name == name) or fail
 NotFound;`, reading the rule's `name` parameter rather than a fixture (per #15,
