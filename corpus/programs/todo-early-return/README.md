@@ -6,7 +6,10 @@ has no block statement (§2 — the spec defines neither `if` nor `else`), so th
 early-exit reading comes from `return t.id;` statements and `or fail` alone.
 Anchor: the #5 resolution's decision to keep `return` reserved even in rule bodies
 so it reads as a value-producing exit rather than being re-interpretable as an
-identifier. The example's third argument is the inline Date literal `2026-10-22`
+identifier. The `resolved_from_open` law's `with` clause binds `t.owner` against
+an `Id<User>` literal (`t.owner != #0 : Id<User>`), not a `users` table this
+module does not declare (only `tasks` is declared). The example's third argument
+is the inline Date literal `2026-10-22`
 for the `on: Date` parameter — no undeclared fixture name is referenced.
 
 ## Issue anchors

@@ -19,7 +19,7 @@ rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   require t.owner == by or fail NotFound;
   require t.due is Some || (t.due.value < on) or fail Stale;
   tasks[id].status = Done(clock.now) unless t.status is Done;
-  output ledger += { task: id, action: "archived", on: on };
+  output ledger += { task: id, action: "archived" };
   return id;
 }
 

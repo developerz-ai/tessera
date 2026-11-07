@@ -20,10 +20,10 @@ fixture received_on: Date = 2026-10-22;
 
 rule intake(rid: Id<Raw>, tid: Id<Task>) {
   let r = raws[rid] or fail NotFound;
-  new t: Task where t.id == tid, t.title == r.payload, t.status is Open;
+  new t: Task where t.id == tid, t.title == r.payload, t.status == Open, t.due == none;
   output ledger += { task: tid, event: "intake" };
 }
 
 law intakes_close_stream: forall t in tasks. (t.status is Open) => (t.title != "");
 
-example intake(raw_one, task_one) fails NotFound;
+example intake(raw_one, task_one, bob, received_on) fails NotFound;

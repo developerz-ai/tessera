@@ -22,6 +22,6 @@ rule resolve(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   return t.id;
 }
 
-law resolved_from_open: forall t in tasks. (t.status is Done) with (t.owner in users);
+law resolved_from_open: forall t in tasks. (t.status is Done) with (t.owner != #0 : Id<User>);
 
-example resolve(bob, alice_task, on_date) fails NotFound;
+example resolve(bob, alice_task, 2026-10-22) fails NotFound;

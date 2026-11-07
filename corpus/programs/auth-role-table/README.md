@@ -3,8 +3,10 @@
 `table.tes` — a `state users: Table<User> key id;` (keyed, like every other
 program's tables) holding record-valued fields (`role`, `name`), a rule that
 writes through `users[id].role`, a law reading the same field, a stream append
-as an `Entry`-typed local (`let e: Entry; let e.user = id; let e.granted =
-role; output ledger += e;`), and a two-fixture-argument `example`. All shapes
+of a record literal (`output ledger += { user: u, granted: role };` — v0.1 has
+no standalone local record-typing, so the append projects the `Entry` shape
+inline), and a two-fixture-argument `example` (`grant(bob, admin_role)` with
+both arguments declared fixtures). All shapes
 ride existing anchors — no fresh constructs; the `#15` anchor commits the
 two-arg fixture form.
 

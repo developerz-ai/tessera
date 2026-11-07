@@ -2,10 +2,13 @@
 
 `segments.tes` — pins the #6 missing-`constraint`-production resolution together
 with #8: `segments: Table<Session>` is the fixed G4 partitioned-store shape,
-with `shard: Int[0..max_shards]` refined so the law's per-shard comparison has
+with `shard: Int[0..3]` refined so the law's per-shard comparison has
 a bounded range to check against, and
-the `new n: Session where ... where n.shard == 1` constraint chain is the
+the `new n: Session where n.id == s, n.user == whom, n.token == tok,
+n.shard == 1` constraint list (the chained `where` form §5 fixes) is the
 #6-constraint-list form the follow-up grammar allows at admission time.
+Note there is no `max_shards` symbol in this module: the refinement's upper
+bound is the literal `3`, so nothing undeclared is reachable from the type.
 
 ## Issue anchors
 

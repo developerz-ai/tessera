@@ -10,10 +10,11 @@ needs clock: Clock;
 
 fixture bob: Id<User> = #1 : Id<User>;
 fixture alice_task: Id<User> = #12 : Id<User>;
+fixture token_value: Text = "tok-1";
 
 rule issue(name: Text, t: Text) needs clock {
-  let u = users[bob_id] or fail NotFound;
-  users[bob_id].token = t;
+  let u = find(forall p in users. p.name == name) or fail NotFound;
+  users[u.id].token = t;
   output ledger += { id: u.id, issued: clock.now };
   return t;
 }
@@ -22,4 +23,4 @@ law tokens_unique: forall u1 in users. forall u2 in users. (u1.token == u2.token
 
 law in_precedence_check: forall u in users. u.name in {"bob", "alice"} => (u.token != "");
 
-example issue(bob, "tok-1") fails NotFound;
+example issue(token_value, token_value) fails NotFound;

@@ -16,11 +16,11 @@ fixture opened_on: Date = 2026-10-22;
 rule complete(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   let t = tasks[id] or fail NotFound;
   require t.owner == by or fail NotFound;
-  require on >= opened_on or fail Stale;
+  require on >= 2026-10-22 or fail Stale;
   tasks[id].status = Done(clock.now) unless t.status is Done;
 }
 
-law ascribed_only_same: forall t in tasks. (t.id == alice_task) => (t.status is Done);
+law ascribed_only_same: forall t in tasks. (t.id == #12 : Id<Task>) => (t.status is Done);
 
 // Ascription on both sides of the boundary: an `Id<Task>` literal and a
 // `Date`-typed fixture value. #10 ascription side.

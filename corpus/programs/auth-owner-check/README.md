@@ -1,6 +1,6 @@
 # auth-owner-check
 
-`owner-check.tes` — the §4 owner-guard shape: `require u.owner == by or fail NotFound;`
+`owner-check.tes` — the §4 owner-guard shape: `require t.owner == by or fail NotFound;`
 inside a rule with a `forall`-law over the `tasks` table and a two-fixture example
 (`complete(alice, some_task)`). The law `completedMeansOwner` binds its free
 variable: it reads `(t.status is Done) => (t.owner in users)` with the

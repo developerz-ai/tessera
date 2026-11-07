@@ -2,15 +2,15 @@
 
 `login.tes` — an auth `login` rule with `or fail NotFound` on both the table
 lookup and the password check. Uses the #15 fixture-origin rule twice: a `Text`
-fixture (`bob_password`, `wrong_password`) alongside `Id<T>` fixtures, so an
-`example` password check (`login(bob_password, wrong_password)`) exercises both
-anchor paths in one rule.
+fixture (`wrong_password`) alongside an `Id<T>` fixture (`bob`), so an `example`
+(`login(bob, wrong_password)`) exercises both anchor paths in one rule.
 
-The table lookup does not invent a `find(forall p in users. …)` call — the rule
-body reads a fixture-declared `Id<User>` from `users` (`users[bob] or fail
-NotFound;`) — and the `new s: Session where s.user == u.id, s.token ==
-u.password, s.opened == clock.now;` constraints determine every field `Session`
-declares (`user`, `token`, `opened`), leaving no derived field undetermined.
+The table lookup uses `find(forall p in users. p.name == name) or fail
+NotFound;`, reading the rule's `name` parameter rather than a fixture (per #15,
+no fixture enters a rule body) — and the `new s: Session where s.user == u.id,
+s.token == u.password, s.opened == clock.now;` constraints determine every
+field `Session` declares (`user`, `token`, `opened`), leaving no derived field
+undetermined.
 
 ## Issue anchors
 

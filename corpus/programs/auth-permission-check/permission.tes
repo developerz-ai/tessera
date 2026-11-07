@@ -14,12 +14,12 @@ fixture alice_task: Id<Task> = #12 : Id<Task>;
 fixture required_permission: Text = "tasks.write";
 
 rule complete(by: Id<User>, id: Id<Task>) needs clock {
-  require (users[by].permission == required_permission) or fail Forbidden;
+  require (users[by].permission == "tasks.write") or fail Forbidden;
   let t = tasks[id] or fail NotFound;
   require t.owner == by or fail Forbidden;
   tasks[id].status = Done(clock.now) unless t.status is Done;
 }
 
-law admins_write: forall t in tasks. (t.status is Done) => (t.owner.permission in {"tasks.write", "tasks.admin"}) or (t.owner.name in {"bob", "alice"});
+law admins_write: forall t in tasks. forall u in users. (t.status is Done) => (u.permission in {"tasks.write", "tasks.admin"}) or (u.name in {"bob", "alice"}) with (t.owner == u);
 
 example complete(bob, alice_task) fails NotFound;

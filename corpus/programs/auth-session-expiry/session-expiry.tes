@@ -17,7 +17,7 @@ fixture expires_at: Date = 2026-11-22;
 
 rule open_session(whom: Id<User>, sid: Id<Session>, opened: Date, expires: Date) needs clock {
   let u = users[whom] or fail NotFound;
-  new s: Session where s.user == u.id, s.opened == opened, s.expires == expires;
+  new s: Session where s.id == sid, s.user == u.id, s.opened == opened, s.expires == expires;
   output ledger += { session: sid, event: "opened" };
 }
 

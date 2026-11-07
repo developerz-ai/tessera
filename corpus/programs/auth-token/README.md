@@ -3,10 +3,12 @@
 `token.tes` — keys on the #5 keyword-list resolution: `return` is used as a
 reserved keyword at statement position in a rule body, and the rule's writes go
 through `state`+`output` in the fixed slots. The rule `issue` reads its own
-parameter, not a fixture: the table lookup reads `users[n]` (the `name`
-parameter, failing `NotFound`) and the write goes to `users[n].token` — the
-declared fixtures `bob` and `alice_task` appear only as the `example`'s
-arguments, per #15's fixture-only-example rule. A second law uses `in`
+parameter, not a fixture: the table lookup uses `find(forall p in users.
+p.name == name) or fail NotFound;` (so the rule reads the `name` parameter,
+not a fixture) and the write goes to `users[u.id].token` via the found row —
+the declared fixtures (`bob`, `alice_task`, `token_value`) appear only as the
+`example`'s arguments (`issue(token_value, token_value)`), per #15's
+fixture-only-example rule. A second law uses `in`
 (`u.name in {...}`) to pin #9's `in`-precedence reading twice over.
 
 ## Issue anchors
