@@ -1,0 +1,27 @@
+module todo_early_return @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+
+state tasks: Table<Task> key id;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+rule resolve(by: Id<User>, id: Id<Task>, on: Date) needs clock {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NothingToDo;
+  if (t.status is Done) {
+    return t.id;
+  } else if (t.created < on) {
+    return t.id;
+  }
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+  return t.id;
+}
+
+law resolved_from_open: forall t in tasks. (t.status is Done) with (t.owner in users);
+
+example resolve(bob, alice_task, on_date) fails NotFound;

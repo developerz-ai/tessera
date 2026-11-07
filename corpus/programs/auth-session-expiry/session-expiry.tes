@@ -1,0 +1,35 @@
+module auth_session_expiry @1;
+
+type User = { id: Id<User>, name: Text, token: Text };
+type Session = { id: Id<Session>, user: Id<User>, opened: Date, expires: Date };
+
+state users: Table<User> key id;
+state sessions: Table<Session> key id;
+output ledger: Stream<Entry>;
+type Entry = { session: Id<Session>, event: Text };
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Session> = #12 : Id<Session>;
+fixture opened_at: Date = 2026-10-22;
+fixture expires_at: Date = 2026-11-22;
+
+rule open_session(whom: Id<User>, sid: Id<Session>, opened: Date, expires: Date) needs clock {
+  let u = users[whom] or fail NotFound;
+  new s: Session where s.user == u.id, s.opened == opened, s.expires == expires;
+  output ledger += { session: sid, event: "opened" };
+}
+
+rule expire(sid: Id<Session>) needs clock {
+  let s = sessions[sid] or fail NotFound;
+  require s.expires < clock.today or fail NotExpired;
+  output ledger += { session: sid, event: "expired" };
+}
+
+// The guarantee: any session older than today was closed (or is about to be).
+law still_open_means_live: forall s in sessions. (s.expires >= 2026-10-22) with (s.opened <= s.expires);
+
+example open_session(bob, alice_task, opened_at, expires_at) fails NotFound;
+
+example expire(alice_task) fails NotFound;

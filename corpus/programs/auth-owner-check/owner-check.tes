@@ -1,0 +1,24 @@
+module auth_owner_check @1;
+
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type User = { id: Id<User>, name: Text };
+type Status = Open | Done(at: Instant);
+
+state tasks: Table<Task> key id;
+state users: Table<User> key id;
+
+needs clock: Clock;
+
+fixture alice: Id<User> = #1 : Id<User>;
+fixture some_task: Id<Task> = #12 : Id<Task>;
+
+rule complete(by: Id<User>, id: Id<Task>) needs clock {
+  let u = users[by] or fail NotFound;
+  let t = tasks[id] or fail NotFound;
+  require u.owner == by or fail NotFound;
+  tasks[id].status = Done(clock.now) unless t.status is Done;
+}
+
+law completedMeansOwner: forall t in tasks. forall u in users. (t.status is Done) => (u.owner == by) with (t.owner == u);
+
+example complete(alice, some_task) fails NotFound;

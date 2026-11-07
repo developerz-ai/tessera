@@ -1,0 +1,23 @@
+module todo_due_date @1;
+
+type Status = Open | Done(at: Instant);
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant, due: Maybe<Date> };
+
+state tasks: Table<Task> key id;
+
+needs clock: Clock;
+
+fixture created: Date = 2026-10-22;
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<Task> = #12 : Id<Task>;
+
+rule create(by: Id<User>, id: Id<Task>, due: Date) {
+  new t: Task where t.owner == by, t.due == due, t.status is Open, t.created == created;
+}
+
+law due_set_once: forall t in tasks. t.due is Some => (t.due.value >= created);
+
+// #10: the Date literal `2026-10-22` is a Date value; the fixture `created` reuses it
+// so example arguments stay fixture-only (§4).
+
+example create(bob, alice_task, created) fails NotFound;

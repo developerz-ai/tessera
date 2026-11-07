@@ -1,0 +1,25 @@
+module auth_token @1;
+
+type User = { id: Id<User>, name: Text, token: Text };
+type Entry = { id: Id<User>, issued: Instant };
+
+state users: Table<User> key id;
+output ledger: Stream<Entry>;
+
+needs clock: Clock;
+
+fixture bob: Id<User> = #1 : Id<User>;
+fixture alice_task: Id<User> = #12 : Id<User>;
+
+rule issue(name: Text, t: Text) needs clock {
+  let u = users[bob_id] or fail NotFound;
+  users[bob_id].token = t;
+  output ledger += { id: u.id, issued: clock.now };
+  return t;
+}
+
+law tokens_unique: forall u1 in users. forall u2 in users. (u1.token == u2.token) => (u1.id == u2.id);
+
+law in_precedence_check: forall u in users. u.name in {"bob", "alice"} => (u.token != "");
+
+example issue(bob, "tok-1") fails NotFound;

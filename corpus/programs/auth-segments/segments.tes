@@ -1,0 +1,16 @@
+module auth_segments @1;
+
+type Session = { id: Id<Session>, user: Id<User>, token: Text, shard: Int };
+
+state segments: Table<Session> key id;
+
+fixture seg_one: Id<Session> = #4 : Id<Session>;
+fixture seg_two: Id<Session> = #9 : Id<Session>;
+
+rule admit(s: Id<Session>, whom: Id<User>, tok: Text) {
+  new n: Session where n.id == s, n.user == whom, n.token == tok, n.shard == 1;
+}
+
+law same_shard_uniqueness: forall s1 in segments. forall s2 in segments. ((s1.shard == s2.shard) && (s1.user == s2.user)) => (s1.token == s2.token);
+
+example admit(seg_one, bob, "tok-seg-1") fails NotFound;
