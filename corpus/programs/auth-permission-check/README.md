@@ -10,9 +10,10 @@ not a `User` row, so the set literal is compared against the joined row: the
 law's predicate runs over `users[u].permission` with `t.owner == u` bound in
 the `forall u in users` guard). Rule bodies read only rule parameters and
 table lookups — the guards use `users[by].permission == "tasks.write"` and
-`t.owner == by` directly, with no fixture (`required_permission`) referenced
-inside a rule body, per §4's restriction of fixture uses to `example`
-declarations and fixture initializers. No fresh construct rides outside the
+`t.owner == by` directly, with no fixture referenced inside a rule body, per
+§4's restriction of fixture uses to `example` declarations and fixture
+initializers — so the module declares exactly the fixtures its example passes
+(`bob`, `alice_task`). No fresh construct rides outside the
 existing records.
 
 ## Issue anchors

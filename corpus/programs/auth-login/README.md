@@ -2,8 +2,11 @@
 
 `login.tes` — an auth `login` rule with `or fail NotFound` on both the table
 lookup and the password check. Uses the #15 fixture-origin rule twice: a `Text`
-fixture (`wrong_password`) alongside an `Id<T>` fixture (`bob`), so an `example`
-(`login(bob, wrong_password)`) exercises both anchor paths in one rule.
+fixture (`bobs_name`) for the rule's `name: Text` parameter, so an `example`
+(`login(bobs_name, wrong_password)`) passes args whose declared `Text` types
+match `login(name: Text, attempt: Text)` and exercises both anchor paths in one
+rule — never the `Id<User>` fixture `bob`, which is a type error for a `Text`
+parameter, and never a literal, which #15 forbids as an example argument.
 
 The table lookup uses `find(forall p in users. p.name == name) or fail
 NotFound;`, reading the rule's `name` parameter rather than a fixture (per #15,

@@ -11,7 +11,6 @@ needs clock: Clock;
 
 fixture bob: Id<User> = #1 : Id<User>;
 fixture alice_task: Id<Task> = #12 : Id<Task>;
-fixture required_permission: Text = "tasks.write";
 
 rule complete(by: Id<User>, id: Id<Task>) needs clock {
   require (users[by].permission == "tasks.write") or fail Forbidden;

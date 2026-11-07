@@ -15,8 +15,6 @@ needs clock: Clock;
 
 fixture raw_one: Id<Raw> = #3 : Id<Raw>;
 fixture task_one: Id<Task> = #12 : Id<Task>;
-fixture bob: Id<User> = #1 : Id<User>;
-fixture received_on: Date = 2026-10-22;
 
 rule intake(rid: Id<Raw>, tid: Id<Task>) {
   let r = raws[rid] or fail NotFound;
@@ -26,4 +24,4 @@ rule intake(rid: Id<Raw>, tid: Id<Task>) {
 
 law intakes_close_stream: forall t in tasks. (t.status is Open) => (t.title != "");
 
-example intake(raw_one, task_one, bob, received_on) fails NotFound;
+example intake(raw_one, task_one) fails NotFound;
