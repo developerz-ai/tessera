@@ -47,15 +47,17 @@ maintainer's reading of the spec, not a text match.
 | [`todo-negative-shape/`](todo-negative-shape/README.md) | `Id<Task>` vs `Id<User>` kept disjoint in one rule (negative edge) | #7, #9, #10, #15 |
 | [`auth-session-expiry/`](auth-session-expiry/README.md) | Clock-driven `expire` rule, `Date`-comparison law | #7, #9, #10, #15 |
 | [`intake-domains/`](intake-domains/README.md) | Three intake tables composed by one rule, spanning domains | #7, #9, #10, #15 |
-| [`auth-role-table/`](auth-role-table/README.md) | Record-valued fields, role update, `return` of the new role | #5, #7, #9, #10, #15 |
+| [`auth-role-table/`](auth-role-table/README.md) | Record-valued fields, role update, `return` of the role it assigned | #5, #7, #9, #10, #15 |
 | [`todo-shard/`](todo-shard/README.md) | `Int[0..3]` shard field, per-shard law | #7, #8, #9, #10, #15 |
-| [`auth-owner-check/`](auth-owner-check/README.md) | `require t.owner == by or fail Forbidden;` guard shape | #7, #9, #10, #15 |
+| [`auth-owner-check/`](auth-owner-check/README.md) | `require t.owner == by or fail NotFound;` guard shape | #7, #9, #10, #15 |
 | [`todo-archive/`](todo-archive/README.md) | Status transition + stream append + `forall` law over the date | #7, #9, #10, #15 |
 | [`auth-permission-check/`](auth-permission-check/README.md) | Two `or fail` guards after the lookup; declared failures reachable | #7, #9, #10, #15 |
 
 Per-program READMEs list, against each of the seven issues, whether that
 program's syntax rests on that resolution (`YES`, with the citing line) or does
-not use it (`NONE`). `corpus/semantics/` holds the interpreter cases; the ones
+not use it (`NONE`). The resolution link itself lives in the table above and
+nowhere else: a program row cites the issue number, so a corrected link is one
+edit and the old copies cannot go stale. `corpus/semantics/` holds the interpreter cases; the ones
 that name a program in this directory are listed in
 [`../README.md`](../README.md), which also records why a todo-domain case is
 deferred and an auth-domain case is not. A program's case is registered by naming

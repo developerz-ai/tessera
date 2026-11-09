@@ -13,9 +13,9 @@ fixture admin_role: Text = "admin";
 
 rule grant(u: Id<User>, role: Text) {
   let target = users[u] or fail NotFound;
-  users[u].role = role;
+  users[target.id].role = role;
   output ledger += { user: u, granted: role };
-  return target.role;
+  return role;
 }
 
 law roles_limited: forall u in users. (u.role == "admin") => (u.name in {"bob", "alice"});

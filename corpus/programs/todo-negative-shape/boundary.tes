@@ -16,8 +16,9 @@ fixture alice_task: Id<Task> = #12 : Id<Task>;
 // the two as disjoint — the law below distinguishes them, then keeps them apart.
 law disjoint_id_domains: forall t in tasks. forall u in users. (t.owner == u.id) with (t.id != u.id);
 
-// Reverse #10 mirror edge — a `Date`-typed fixture may not be read through an
-// `Id<Task>` field, and vice versa; no law asserts a cross-domain equality here.
+// Mirror #10 edge — no id domain crosses into another. The fixtures above are
+// `Id<User>` and `Id<Task>`; the law compares `t.owner` (an `Id<User>`) with
+// `u.id` (also an `Id<User>`), never an `Id<Task>` against an `Id<User>` value.
 
 example tag(bob, alice_task) fails NotFound;
 

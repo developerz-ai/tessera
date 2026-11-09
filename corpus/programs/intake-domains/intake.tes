@@ -4,12 +4,12 @@ type Raw = { id: Id<Raw>, source: Text, payload: Text, received: Date };
 type Task = { id: Id<Task>, title: Text, status: Status, due: Maybe<Date> };
 type Status = Open | Done(at: Instant);
 type User = { id: Id<User>, name: Text };
+type Entry = { task: Id<Task>, event: Text };
 
 state raws: Table<Raw> key id;
 state tasks: Table<Task> key id;
 state users: Table<User> key id;
 output ledger: Stream<Entry>;
-type Entry = { task: Id<Task>, event: Text };
 
 needs clock: Clock;
 

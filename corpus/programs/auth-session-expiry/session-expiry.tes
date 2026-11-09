@@ -2,11 +2,11 @@ module auth_session_expiry @1;
 
 type User = { id: Id<User>, name: Text, token: Text };
 type Session = { id: Id<Session>, user: Id<User>, opened: Date, expires: Date };
+type Entry = { session: Id<Session>, event: Text };
 
 state users: Table<User> key id;
 state sessions: Table<Session> key id;
 output ledger: Stream<Entry>;
-type Entry = { session: Id<Session>, event: Text };
 
 needs clock: Clock;
 

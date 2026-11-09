@@ -13,15 +13,16 @@ needs clock: Clock;
 
 fixture bob: Id<User> = #1 : Id<User>;
 fixture alice_task: Id<Task> = #12 : Id<Task>;
-fixture opened_at: Date = 2026-10-22;
+fixture opened_on: Date = 2026-10-22;
 
-rule complete(by: Id<User>, id: Id<Task>, at: Date) needs clock {
+rule complete(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   let t = tasks[id] or fail NotFound;
   require t.owner == by or fail NotFound;
+  require on >= 2026-10-22 or fail Stale;
   tasks[id].status = Done(clock.now) unless t.status is Done;
   output ledger += { task: id, action: "completed" };
 }
 
 law done_once: forall t in tasks. (t.status is Done) => (t.status.at >= t.created);
 
-example complete(bob, alice_task, opened_at) fails NotFound;
+example complete(bob, alice_task, opened_on) fails NotFound;

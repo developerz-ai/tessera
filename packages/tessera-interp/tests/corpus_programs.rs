@@ -13,8 +13,12 @@
 //!    produce — the rule body carries a matching `or fail <Name>`
 //!    (`../README.md#corpus-invariant-a-declared-failure-must-be-reachable`);
 //! 3. the `#5`, `#7`, `#9` and `#10` anchor rows say YES exactly when the module
-//!    uses that construct;
-//! 4. the index's `Construct set` cell agrees with the program's own rows.
+//!    uses that construct — `#7` from a rule body carrying two or more
+//!    `;`-terminated statements, since every module's `module …;` header ends
+//!    with `;` and would satisfy any weaker test;
+//! 4. the index's `Construct set` cell agrees with the program's own rows, and
+//!    the resolution links live in the index alone, not copied into every
+//!    program README.
 //!
 //! `#6`, `#8` and `#15` are not derived: whether a program composes a
 //! missing-production shape is a reading of the spec, not a text match, so those
@@ -137,6 +141,15 @@ fn count(haystack: &str, needle: char) -> usize {
     haystack.chars().filter(|c| *c == needle).count()
 }
 
+/// How many `;`-terminated statements a rule body carries, comments ignored.
+fn statements(body: &str) -> usize {
+    body.lines()
+        .map(strip_comment)
+        .map(str::trim)
+        .filter(|line| line.ends_with(';'))
+        .count()
+}
+
 /// Every `example <rule>(<args>) fails <Name>;` in a module, as
 /// `(rule, failure, 1-based line)`.
 fn failing_examples(source: &str) -> Vec<(String, String, usize)> {
@@ -165,6 +178,10 @@ fn failing_examples(source: &str) -> Vec<(String, String, usize)> {
 
 /// The `Used?` column of anchor row `#anchor`: `Some(true)` for `YES`,
 /// `Some(false)` for `NONE`, `None` for a missing or malformed row.
+///
+/// A row is exactly `| <issue> | <used?> |`: the resolution link lives in the
+/// index and nowhere else, so a row that grows a link column again is malformed
+/// and fails here rather than drifting into twenty stale copies.
 fn anchor_row(readme: &str, anchor: u8) -> Option<bool> {
     let prefix = format!("#{anchor} ");
     readme
@@ -172,7 +189,7 @@ fn anchor_row(readme: &str, anchor: u8) -> Option<bool> {
         .filter(|line| line.trim_start().starts_with('|'))
         .find_map(|line| {
             let cells: Vec<&str> = line.split('|').collect();
-            (cells.len() >= 4 && cells[1].trim().starts_with(&prefix)).then_some(cells[3].trim())
+            (cells.len() == 4 && cells[1].trim().starts_with(&prefix)).then(|| cells[2].trim())
         })
         .and_then(|used| {
             if used.starts_with("YES") {
@@ -192,9 +209,13 @@ fn derived_row(anchor: u8, source: &str) -> bool {
         5 => source
             .lines()
             .any(|line| line.trim_start().starts_with("return ")),
-        // #7 — the statement separator: every statement in these programs ends
-        // with `;`, including the `or fail` forms the rows annotate.
-        7 => source.lines().any(|line| line.trim_end().ends_with(';')),
+        // #7 — the statement separator: a rule body carries two or more
+        // `;`-terminated statements, including the `or fail` forms the rows
+        // annotate. The `module …;` header ends with `;` in every module, so on
+        // its own it is evidence of nothing.
+        7 => rule_bodies(source)
+            .values()
+            .any(|body| statements(body) >= 2),
         // #9 — the `needs` grammar declaring a capability.
         9 => source
             .lines()
@@ -371,6 +392,48 @@ fn an_earlier_lookup_miss_shadows_a_later_failure() {
         None
     );
     assert_eq!(earlier_failure_site(""), None);
+}
+
+/// `#7` is derived from a rule body, not from the `module …;` header: a module
+/// whose only `;` is its header does not use the statement separator, and one
+/// whose body carries two statements does. Without the first case the anchor can
+/// never disagree with the source and the exactness claim is unfalsifiable.
+#[test]
+fn the_statement_separator_anchor_excludes_the_module_header() {
+    let header_only = "module todo_basic @1;\n\nrule noop() {\n}\n";
+    assert!(
+        !derived_row(7, header_only),
+        "a module whose only `;` is its `module …;` header must not claim #7"
+    );
+
+    let one_statement =
+        "module todo_basic @1;\n\nrule noop() {\n  let t = tasks[id] or fail NotFound;\n}\n";
+    assert!(
+        !derived_row(7, one_statement),
+        "one `;`-terminated statement is not the separator being exercised"
+    );
+
+    let two_statements = "module todo_basic @1;\n\nrule complete() {\n  let t = tasks[id] or fail NotFound;\n  require t.owner == by or fail Forbidden;\n}\n";
+    assert!(
+        derived_row(7, two_statements),
+        "two `;`-terminated statements in one rule body must claim #7"
+    );
+}
+
+/// A row that carries a resolution-link column again is malformed, not silently
+/// accepted: the link lives in the index alone, so the twenty program READMEs
+/// cannot drift into stale copies of it.
+#[test]
+fn an_anchor_row_carries_no_resolution_link_column() {
+    let linked = "| Issue | Anchor (resolution link) | Used? |\n|---|---|---|\n| #7 statement separator | #7 | YES — `;` at :17 |\n";
+    assert_eq!(
+        anchor_row(linked, 7),
+        None,
+        "a three-column anchor row must be rejected, not read positionally"
+    );
+
+    let plain = "| Issue | Used? |\n|---|---|\n| #7 statement separator | YES — `;` at :17 |\n";
+    assert_eq!(anchor_row(plain, 7), Some(true));
 }
 
 /// The `#5`, `#7`, `#9` and `#10` rows match what the module actually uses.
