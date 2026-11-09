@@ -10,6 +10,16 @@ n.shard == 1` constraint list (the chained `where` form §5 fixes) is the
 Note there is no `max_shards` symbol in this module: the refinement's upper
 bound is the literal `3`, so nothing undeclared is reachable from the type.
 
+`admit` opens with `let owner = users[whom] or fail NotFound;` (§4,
+`docs/spec/v0.1.md:638`), so the rule reads a table and the declared
+`fails NotFound` has a reachable failure site: `state users: Table<User> key id;`
+is empty on the fresh store, `users[bob]` misses, and `admit` aborts with
+`NotFound` before its `new` runs. `owner` is then projected (`n.user == owner.id`)
+rather than the `whom` parameter read directly — the same local-binding shape
+[`auth-login/`](../auth-login/login.tes) uses for `s.user == u.id`. Without that
+lookup the body would be one `new` whose fields are all bound by parameters and
+literals, and the declared failure could never occur.
+
 ## Issue anchors
 
 | Issue | Anchor (resolution link) | Used? |

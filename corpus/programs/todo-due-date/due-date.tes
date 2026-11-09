@@ -5,6 +5,7 @@ type User = { id: Id<User>, name: Text };
 type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Date, due: Maybe<Date> };
 
 state tasks: Table<Task> key id;
+state users: Table<User> key id;
 
 needs clock: Clock;
 
@@ -14,7 +15,8 @@ fixture alice_task: Id<Task> = #12 : Id<Task>;
 fixture task_title: Text = "ship the due-date check";
 
 rule create(by: Id<User>, id: Id<Task>, title: Text, due: Date) {
-  new t: Task where t.id == id, t.owner == by, t.title == title, t.due == due, t.status is Open, t.created == 2026-10-22;
+  let owner = users[by] or fail NotFound;
+  new t: Task where t.id == id, t.owner == owner.id, t.title == title, t.due == due, t.status is Open, t.created == 2026-10-22;
 }
 
 law due_set_once: forall t in tasks. t.due is Some => (t.due.value >= 2026-10-22);

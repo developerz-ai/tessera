@@ -4,6 +4,7 @@ type User = { id: Id<User>, name: Text };
 type Session = { id: Id<Session>, user: Id<User>, token: Text, shard: Int[0..3] };
 
 state segments: Table<Session> key id;
+state users: Table<User> key id;
 
 fixture bob: Id<User> = #1 : Id<User>;
 fixture seg_one: Id<Session> = #4 : Id<Session>;
@@ -11,7 +12,8 @@ fixture seg_two: Id<Session> = #9 : Id<Session>;
 fixture seg_token: Text = "tok-seg-1";
 
 rule admit(s: Id<Session>, whom: Id<User>, tok: Text) {
-  new n: Session where n.id == s, n.user == whom, n.token == tok, n.shard == 1;
+  let owner = users[whom] or fail NotFound;
+  new n: Session where n.id == s, n.user == owner.id, n.token == tok, n.shard == 1;
 }
 
 law same_shard_uniqueness: forall s1 in segments. forall s2 in segments. ((s1.shard == s2.shard) && (s1.user == s2.user)) => (s1.token == s2.token);

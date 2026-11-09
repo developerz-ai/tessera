@@ -6,14 +6,25 @@ table entry. The literal is inlined (`t.created == 2026-10-22` in the `new`
 constraint chain, `t.due.value >= 2026-10-22` in the law) because §4 limits
 fixture uses to `example` declarations and fixture initializers — the `created`
 fixture appears only as an example argument. The `new` constraint list pins
-`t.id == <the created task's Id>` beside `t.owner == by`, `t.title == title`,
+`t.id == <the created task's Id>` beside `t.owner == owner.id`, `t.title == title`,
 `t.due == due`, `t.status is Open` and `t.created == 2026-10-22`, so every field
 `Task` declares (`id`, `owner`, `title`, `status`, `created`, `due`) is uniquely
 determined, as `docs/spec/v0.1.md:254` requires — `title` included, bound by the
 rule's own `title: Text` parameter and fed by the `task_title` fixture, which the
 example consumes. That is the same all-fields-determined shape
-[`auth-login/`](../auth-login/README.md) gives `Session`. No feature here depends
-on the still-open question of Date arithmetic
+[`auth-login/`](../auth-login/README.md) gives `Session`.
+
+The rule opens with `let owner = users[by] or fail NotFound;` (§4,
+`docs/spec/v0.1.md:638`), so `create` reads a table and owns a reachable
+`NotFound`: on the fresh store both tables are empty, `users[bob]` misses, and
+`example create(...) fails NotFound;` holds for exactly the reason the lookup
+gives. Without that lookup the body would be a single `new` whose fields are all
+bound by parameters and literals, and the declared failure could never occur.
+`owner` is then projected (`t.owner == owner.id`) rather than the parameter read
+directly, the same local-binding shape [`auth-login/`](../auth-login/login.tes)
+uses for `s.user == u.id`.
+
+No feature here depends on the still-open question of Date arithmetic
 (`docs/spec/open-questions.md`).
 
 ## Issue anchors

@@ -49,3 +49,17 @@ Per-program READMEs list — per issue row — whether that program's syntax res
 that resolution (`YES`), composes two (`YES / YES` with a note), or does not use
 it (`NONE`). `corpus/semantics/` is not touched: that directory is pinned by
 `packages/tessera-interp/tests/semantics_schema.rs` (exactly three cases).
+
+## Corpus invariant: a declared failure must be reachable
+
+Every `example <rule>(...) fails <Name>;` MUST name a failure its rule can
+actually produce: the rule body carries a matching `... or fail <Name>`, or a
+`require ... or fail <Name>`. `new t: T where ...;` only creates a value — it
+never reads a table (`docs/spec/v0.1.md:640`) — so a body that is a single `new`
+whose fields are all bound by parameters and literals has no failure site and
+cannot satisfy `fails <Name>` on the empty store. Where a table read is the point
+of the example, bind the lookup first: `let x = <table>[<key>] or fail NotFound;`
+(`docs/spec/v0.1.md:638`), then use `x` in the `new` constraints.
+
+No checker reads this directory yet, so this invariant is review-enforced; it
+becomes a corpus test when the parser lands (WP A).
