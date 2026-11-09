@@ -240,7 +240,7 @@ cargo test -p tessera-interp --test semantics_schema
 | [`successful-commit.json`](../../../corpus/semantics/successful-commit.json) | Seeded initial state, one ordered call, a logged clock reading, an `Ok(v)` result, the committed final state and one delivered output. |
 | [`failed-call.json`](../../../corpus/semantics/failed-call.json) | A `Failed(Name)` result: the state is unchanged, the buffered output is discarded, and the inputs consumed by the aborted call stay in the log. |
 | [`nondeterministic-inputs.json`](../../../corpus/semantics/nondeterministic-inputs.json) | Two ordered calls consuming logged `clock`, `random` and `id` inputs, with the deterministic expected state and the ordered expected outputs. |
-| [`auth-login-success.json`](../../../corpus/semantics/auth-login-success.json) | A case against a worked example program (`corpus/programs/auth-login/`): the `require … or fail` password guard passes, a `new` row commits to a second table, one `clock.now` reading is logged, and the call publishes `Ok(v)`. |
+| [`auth-login-success.json`](../../../corpus/semantics/auth-login-success.json) | A case against a worked example program (`corpus/programs/auth-login/`): the `require … or fail` password guard passes, a `new` row commits to a second table with a token drawn from the declared `Random` capability, one `clock.now` reading is logged, and the call publishes `Ok(v)`. |
 | [`auth-login-failure.json`](../../../corpus/semantics/auth-login-failure.json) | The same program's other outcome: the password guard trips, so the call publishes `Failed(NotFound)` with the state unchanged and no row created. |
 
 ## What this contract does not decide

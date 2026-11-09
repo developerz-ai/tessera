@@ -27,7 +27,9 @@ rule expire(sid: Id<Session>) needs clock {
   output ledger += { session: sid, event: "expired" };
 }
 
-// The guarantee: any session older than today was closed (or is about to be).
+// The guarantee: no open session predates the 2026-10-22 baseline, and every
+// session's window is well formed (`s.opened <= s.expires`). The law says nothing
+// about closure — `expire` is the only rule that closes a session.
 law still_open_means_live: forall s in sessions. (s.expires >= 2026-10-22) with (s.opened <= s.expires);
 
 example open_session(bob, alice_task, opened_at, expires_at) fails NotFound;

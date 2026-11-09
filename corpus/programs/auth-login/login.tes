@@ -7,19 +7,20 @@ state users: Table<User> key id;
 state sessions: Table<Session> key token;
 
 needs clock: Clock;
+needs rng: Random;
 
 fixture bob: Id<User> = #1 : Id<User>;
 fixture missing_user: Id<User> = #99 : Id<User>;
 fixture wrong_password: Text = "hunter2";
 
-rule login(who: Id<User>, attempt: Text) needs clock {
+rule login(who: Id<User>, attempt: Text) needs clock, rng {
   let u = users[who] or fail NotFound;
   require u.password == attempt or fail NotFound;
-  new s: Session where s.user == u.id, s.token == u.password, s.opened == clock.now;
+  new s: Session where s.user == u.id, s.token == rng.token(32), s.opened == clock.now;
   return s.token;
 }
 
-law one_session_per_user: forall s1 in sessions. forall s2 in sessions. ((s1.user == s2.user) && (s1.opened <= s2.opened)) => (s1.token <= s2.token);
+law one_session_per_user: forall s1 in sessions. forall s2 in sessions. (s1.user == s2.user) => (s1.token == s2.token);
 
 example login(bob, wrong_password) fails NotFound;
 example login(missing_user, wrong_password) fails NotFound;

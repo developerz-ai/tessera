@@ -17,6 +17,7 @@ fixture opened_on: Date = 2026-10-22;
 rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   let t = tasks[id] or fail NotFound;
   require t.owner == by or fail NotFound;
+  require t.created <= on or fail Stale;
   require t.status is Done or fail NotComplete;
   tasks[id].status = Done(clock.now) unless t.status is Done;
   output ledger += { task: id, action: "archived" };

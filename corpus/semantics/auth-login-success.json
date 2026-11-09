@@ -22,6 +22,11 @@
       ],
       "inputs": [
         {
+          "kind": "random",
+          "capability": "rng",
+          "value": "tok-5b1e0c9a7d3f2461"
+        },
+        {
           "kind": "clock",
           "capability": "clock",
           "reading": "now",
@@ -29,7 +34,7 @@
         }
       ],
       "result": {
-        "ok": "hunter2"
+        "ok": "tok-5b1e0c9a7d3f2461"
       }
     }
   ],
@@ -45,7 +50,7 @@
       "sessions": [
         {
           "user": { "id": 1, "type": "Id<User>" },
-          "token": "hunter2",
+          "token": "tok-5b1e0c9a7d3f2461",
           "opened": "2026-10-22T09:15:00Z"
         }
       ]

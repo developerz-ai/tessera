@@ -4,7 +4,7 @@ Examples and tests for language behavior, kept separately from the toolchain cra
 
 | Directory | Content | Format |
 |---|---|---|
-| [`programs/`](programs/README.md) | Domain programs (todo, auth) — spec-conformant examples of §2–§7 syntax, written before any parser exists. One `.tes` + one README per program. | prose + `.tes` |
+| [`programs/`](programs/README.md) | Domain programs (`todo_*`, `auth_*`, `intake_*`) — spec-conformant examples of §2–§7 syntax, written before any parser exists. One `.tes` + one README per program. | prose + `.tes` |
 | `negative/<code>/*.tes` | Negative tests: one directory per diagnostic code (`negative/E-LIT-001/`, …), each program MUST fail with that `E-<AREA>-NNN` code and with no other. Lands with WP B ([`CONTRIBUTING.md`](../CONTRIBUTING.md)). | `.tes`, grouped by code |
 | `seeded-bugs/*.tes` | Verifier soundness cases: each program carries a deliberately broken law and MUST be **refuted**, never proven (`.claude/agents/test-author.md`). Lands with the verifier. | `.tes` |
 | [`semantics/`](../packages/tessera-interp/tests/semantics_schema.rs) | Interpreter semantics cases (success, failure, nondeterministic inputs), validated by `packages/tessera-interp` schema tests. Seeded state lives here and nowhere else. | `.json` per `packages/tessera-interp/schema/semantics-case.schema.json` |
@@ -68,6 +68,11 @@ spec §13 requires to arrive as a versioned proposal with a green differential t
 not as a corpus edit here. The follow-up is a `spec:ambiguity` issue,
 `spec(§3): how does a semantics case encode a sum-type value such as Done(at)?`
 (`/spec-issue`); this corpus takes no reading until it lands, so the todo-domain case
-pair arrives with that decision. Auth-domain cases need no such decision: every field
-of `User` and `Session` is a `Text`, an `Instant` or an `Id<T>`, all of which the
-schema already represents.
+pair arrives with that decision. The `auth-login` case needs no such decision: every
+field of its `User` and `Session` is a `Text`, an `Instant` or an `Id<T>`, all of
+which the schema already represents. That is a property of this one case, not of
+the auth domain: `programs/auth-session-expiry/session-expiry.tes:4` declares
+`opened: Date` / `expires: Date`, and
+`programs/auth-segments/segments.tes:4` declares `shard: Int[0..3]`, so a case
+naming either program would depend on the `Date` and bounded-int readings that
+schema does not fix either.
