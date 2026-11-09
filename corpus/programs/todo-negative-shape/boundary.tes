@@ -12,9 +12,9 @@ needs clock: Clock;
 fixture bob: Id<User> = #1 : Id<User>;
 fixture alice_task: Id<Task> = #12 : Id<Task>;
 
-// `Id<Task>` and `Id<User>` are distinct index types (§3), so a law must treat
-// the two as disjoint — the law below distinguishes them, then keeps them apart.
-law disjoint_id_domains: forall t in tasks. forall u in users. (t.owner == u.id) with (t.id != u.id);
+// `Id<Task>` and `Id<User>` are distinct nominal types (§3), so this law never
+// compares the two domains: `t.owner` and `u.id` are both `Id<User>`.
+law owner_is_named_user: forall t in tasks. forall u in users. (t.owner == u.id) => (u.name != "");
 
 // Mirror #10 edge — no id domain crosses into another. The fixtures above are
 // `Id<User>` and `Id<Task>`; the law compares `t.owner` (an `Id<User>`) with

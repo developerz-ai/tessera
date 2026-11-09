@@ -44,7 +44,7 @@ maintainer's reading of the spec, not a text match.
 | [`todo-extended-state/`](todo-extended-state/README.md) | Two state tables plus a `ledger` stream, three-fixture example | #7, #9, #10, #15 |
 | [`todo-early-return/`](todo-early-return/README.md) | `return` mid-rule, `or fail` paths in the same rule | #5, #7, #9, #10, #15 |
 | [`todo-ascribe-boundary/`](todo-ascribe-boundary/README.md) | Id + `Date` literal ascriptions (`#12 : Id<Task>`) | #7, #9, #10, #15 |
-| [`todo-negative-shape/`](todo-negative-shape/README.md) | `Id<Task>` vs `Id<User>` kept disjoint in one rule (negative edge) | #7, #9, #10, #15 |
+| [`todo-negative-shape/`](todo-negative-shape/README.md) | `Id<Task>` vs `Id<User>` never compared in one law (negative edge) | #7, #9, #10, #15 |
 | [`auth-session-expiry/`](auth-session-expiry/README.md) | Clock-driven `expire` rule, `Date`-comparison law | #7, #9, #10, #15 |
 | [`intake-domains/`](intake-domains/README.md) | Three intake tables composed by one rule, spanning domains | #7, #9, #10, #15 |
 | [`auth-role-table/`](auth-role-table/README.md) | Record-valued fields, role update, `return` of the role it assigned | #5, #7, #9, #10, #15 |
