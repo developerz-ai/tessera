@@ -2,7 +2,7 @@ module todo_archive @1;
 
 type Status = Open | Done(at: Instant);
 type User = { id: Id<User>, name: Text };
-type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Date };
 type Entry = { task: Id<Task>, action: Text };
 
 state tasks: Table<Task> key id;

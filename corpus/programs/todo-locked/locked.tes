@@ -1,7 +1,7 @@
 module todo_locked @1;
 
 type Status = Open | Done(at: Instant);
-type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
+type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Date };
 type User = { id: Id<User>, name: Text, locked: Bool };
 
 state tasks: Table<Task> key id;

@@ -19,6 +19,6 @@ rule complete(by: Id<User>, id: Id<Task>) needs clock {
   tasks[id].status = Done(clock.now) unless t.status is Done;
 }
 
-law admins_write: forall t in tasks. forall u in users. (t.status is Done) => (u.permission in {"tasks.write", "tasks.admin"}) or (u.name in {"bob", "alice"}) with (t.owner == u);
+law admins_write: forall t in tasks. forall u in users. (t.status is Done) => (u.permission in {"tasks.write", "tasks.admin"}) or (u.name in {"bob", "alice"}) with (t.owner == u.id);
 
 example complete(bob, alice_task) fails NotFound;

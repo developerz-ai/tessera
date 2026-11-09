@@ -32,16 +32,16 @@ Not runnable: no command compiles `.tes` files yet — the plans
 | [`todo-output-stream/`](todo-output-stream/README.md) | `output ledger: Stream<Entry>;` + `output ledger += e;` | #7, #9, #15 |
 | [`todo-precedence/`](todo-precedence/README.md) | `forall ... in`, `=>`, `or`/`\|\|`, `in` mixed in one law | #9, #15 |
 | [`auth-segments/`](auth-segments/README.md) | Partitioned table with admission constraints | #6, #8, #15 |
-| [`todo-backlog/`](todo-backlog/README.md) | All seven anchors in one program | #5, #6, #7, #8, #9, #10, #15 |
-| [`todo-extended-state/`](todo-extended-state/README.md) | Two state tables + a third audit table, three-fixture example | #10, #15 |
-| [`todo-early-return/`](todo-early-return/README.md) | `return` mid-rule, `or fail` paths in the same rule | #5, #7, #15 |
+| [`todo-backlog/`](todo-backlog/README.md) | Guarded `Maybe` payload in a `require` chain; five anchors composed in one program | #5, #7, #9, #10, #15 |
+| [`todo-extended-state/`](todo-extended-state/README.md) | Two state tables plus a `ledger` stream, three-fixture example | #10, #15 |
+| [`todo-early-return/`](todo-early-return/README.md) | `return` mid-rule, `or fail` paths in the same rule | #5, #7, #10, #15 |
 | [`todo-ascribe-boundary/`](todo-ascribe-boundary/README.md) | Id+Date literal ascriptions (`#12 : Id<Task>`, Date fixture) | #10, #15 |
 | [`todo-negative-shape/`](todo-negative-shape/README.md) | `Id<Task>` vs `Id<User>` disjoint in one rule (negative edge) | #10, #15 |
-| [`auth-session-expiry/`](auth-session-expiry/README.md) | Clock-driven law (`clock.today`, Date comparisons) | #10, #15 |
+| [`auth-session-expiry/`](auth-session-expiry/README.md) | Clock-driven `expire` rule (`clock.today`), Date-comparison law | #10, #15 |
 | [`intake-domains/`](intake-domains/README.md) | Multi-table composition, spanning intake rule | #7, #10, #15 |
-| [`auth-role-table/`](auth-role-table/README.md) | Record-valued fields, `users[id].role` update | #7, #15 |
+| [`auth-role-table/`](auth-role-table/README.md) | Record-valued fields, `users[u].role` update | #7, #15 |
 | [`todo-shard/`](todo-shard/README.md) | Partitioned `state segments: Table<Task>;`, per-shard law | #8, #10, #15 |
-| [`auth-owner-check/`](auth-owner-check/README.md) | `require u.owner == by or fail NotFound;` guard shape | #7, #10, #15 |
+| [`auth-owner-check/`](auth-owner-check/README.md) | `require t.owner == by or fail NotFound;` guard shape | #7, #10, #15 |
 | [`todo-archive/`](todo-archive/README.md) | Archive status transition + stream append + `forall` law | #7, #9, #10, #15 |
 | [`auth-permission-check/`](auth-permission-check/README.md) | Permission-check shape: two `or fail` forms across a rule | #7, #9, #15 |
 

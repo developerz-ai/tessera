@@ -24,5 +24,6 @@ example tag(bob, alice_task) fails NotFound;
 rule tag(by: Id<User>, of: Id<Task>) {
   let t = tasks[of] or fail NotFound;
   require t.owner == by or fail NotFound;
-  tasks[of].title = "tagged by " + by.name;
+  let u = users[by] or fail NotFound;
+  tasks[of].title = "tagged by " + u.name;
 }

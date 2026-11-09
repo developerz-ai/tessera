@@ -26,6 +26,6 @@ rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
 
 law archived_only_when_some: forall t in tasks. (t.status is Done) => (t.due is Some) with (t.owner in users);
 
-law named_bob: forall t in tasks. (t.owner.name in {"bob"}) => (t.status is Open);
+law named_bob: forall t in tasks. (users[t.owner].name in {"bob"}) => (t.status is Open);
 
 example archive(bob, alice_task, cutoff) fails NotFound;

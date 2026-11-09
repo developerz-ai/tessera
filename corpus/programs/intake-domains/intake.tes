@@ -18,7 +18,7 @@ fixture task_one: Id<Task> = #12 : Id<Task>;
 
 rule intake(rid: Id<Raw>, tid: Id<Task>) {
   let r = raws[rid] or fail NotFound;
-  new t: Task where t.id == tid, t.title == r.payload, t.status == Open, t.due == none;
+  new t: Task where t.id == tid, t.title == r.payload, t.status is Open, t.due == none;
   output ledger += { task: tid, event: "intake" };
 }
 

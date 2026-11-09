@@ -1,7 +1,7 @@
 # todo-due-date
 
 `due-date.tes` — a Date literal (`2026-10-22`) appearing inside `law` expressions
-combining `||` and parenthesized `forall` bodies, per the #10 Date-literal lexer
+and as an inline term of the `new` constraint chain, per the #10 Date-literal lexer
 table entry. The literal is inlined (`t.created == 2026-10-22` in the `new`
 constraint chain, `t.due.value >= 2026-10-22` in the law) because §4 limits
 fixture uses to `example` declarations and fixture initializers — the `created`

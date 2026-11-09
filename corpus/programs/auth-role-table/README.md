@@ -2,7 +2,8 @@
 
 `table.tes` — a `state users: Table<User> key id;` (keyed, like every other
 program's tables) holding record-valued fields (`role`, `name`), a rule that
-writes through `users[id].role`, a law reading the same field, a stream append
+binds the row it writes (`let target = users[u] or fail NotFound;`) and writes
+through `users[u].role`, a law reading the same field, a stream append
 of a record literal (`output ledger += { user: u, granted: role };` — v0.1 has
 no standalone local record-typing, so the append projects the `Entry` shape
 inline), and a two-fixture-argument `example` (`grant(bob, admin_role)` with

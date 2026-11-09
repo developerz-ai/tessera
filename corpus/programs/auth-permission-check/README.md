@@ -7,8 +7,9 @@ two-fixture example. The law `admins_write` names both operands it reads: it
 binds `t` through the declared `forall t in tasks` (§4 quantifier form) and
 reads the user's permission via the `users` table (`t.owner` is an `Id<User>`,
 not a `User` row, so the set literal is compared against the joined row: the
-law's predicate runs over `users[u].permission` with `t.owner == u` bound in
-the `forall u in users` guard). Rule bodies read only rule parameters and
+law's predicate runs over `users[u].permission` with `t.owner == u.id` bound in
+the `with (...)` guard — the projection `u.id`, never `u` itself, because
+`t.owner` is `Id<User>` and no law may compare it to a `User` row). Rule bodies read only rule parameters and
 table lookups — the guards use `users[by].permission == "tasks.write"` and
 `t.owner == by` directly, with no fixture referenced inside a rule body, per
 §4's restriction of fixture uses to `example` declarations and fixture

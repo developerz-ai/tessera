@@ -4,7 +4,7 @@
 with #8: `segments: Table<Session>` is the fixed G4 partitioned-store shape,
 with `shard: Int[0..3]` refined so the law's per-shard comparison has
 a bounded range to check against, and
-the `new n: Session where n.id == s, n.user == whom, n.token == tok,
+the `new n: Session where n.id == s, n.user == owner.id, n.token == tok,
 n.shard == 1` constraint list (the chained `where` form §5 fixes) is the
 #6-constraint-list form the follow-up grammar allows at admission time.
 Note there is no `max_shards` symbol in this module: the refinement's upper
