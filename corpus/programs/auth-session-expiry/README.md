@@ -19,5 +19,5 @@ uniquely determine all fields. Both `example` calls use only declared fixtures
 | #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :19, :25, :26 |
 | #8 G4-fragment productions | NONE |
 | #9 parameterized capability grammar | YES — `needs` clause (`:11`) |
-| #10 literal collisions / Date literal typing | YES — ascribed id literal :13, :14; `Date` literal :15, :16 |
+| #10 literal collisions / Date literal typing | YES — ascribed id literal :13, :14; `Date` literal :15, :16, :33 |
 | #15 example fixture origin | YES — fixture-only example args (`bob, alice_task, opened_at, expires_at` at :35, :37) |

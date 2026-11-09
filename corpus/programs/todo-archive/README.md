@@ -16,5 +16,5 @@ No fresh construct appears; the #9 anchor gives the law's parenthesized preceden
 | #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :18, :19, :20, :21 |
 | #8 G4-fragment productions | NONE |
 | #9 parameterized capability grammar | YES — `needs` clause (`:11`) |
-| #10 literal collisions / Date-literal typing | YES — ascribed id literal :13, :14; `Date` literal :15, :26; the `on: Date` parameter is compared in a guard at :20 |
+| #10 literal collisions / Date-literal typing | YES — ascribed id literal :13, :14; `Date` literal :15, :26; the `on: Date` parameter is compared by a guard |
 | #15 example fixture origin | YES — fixture-only example args (`bob, done_task, opened_on` at :28) |

@@ -29,5 +29,5 @@ literals, and the declared failure could never occur.
 | #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :15 |
 | #8 G4-fragment productions | YES — the partitioned-store shape (`state segments: Table<Session> key id;`, `:6`) |
 | #9 parameterized capability grammar | NONE |
-| #10 literal collisions / id-literal typing | YES — ascribed id literal :9, :10 |
+| #10 literal collisions / id-literal typing | YES — ascribed id literal :9, :10, :11 |
 | #15 example fixture origin | YES — fixture-only example args (`seg_one, bob, seg_token` at :21, :22) |

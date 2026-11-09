@@ -36,5 +36,5 @@ No feature here depends on the still-open question of Date arithmetic
 | #7 untruncated statement boundaries | YES — `;` terminates every statement, including the `or fail` forms at :18 |
 | #8 G4-fragment productions | NONE |
 | #9 parameterized capability grammar | YES — `needs` clause (`:10`) |
-| #10 literal collisions / Date literal precedence | YES — ascribed id literal :13, :14; `Date` literal :12, :19 |
+| #10 literal collisions / Date literal precedence | YES — ascribed id literal :13, :14; `Date` literal :12, :19; the law's `Date` literal :22 |
 | #15 example fixture origin | YES — fixture-only example args (`bob, alice_task, task_title, created` at :29) |

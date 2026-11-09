@@ -21,8 +21,8 @@ uses the same `#1`/`#12` id shapes as that program.
 |---|---|
 | #5 keyword list | NONE |
 | #6 keywords without productions | NONE |
-| #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :26, :27, :28 |
+| #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :30, :31, :32 |
 | #8 G4-fragment productions | NONE |
 | #9 parameterized capability grammar | YES — `needs` clause (`:10`) |
 | #10 literal collisions / id-literal typing | YES — ascribed id literal :12, :13 |
-| #15 example fixture origin | YES — fixture-only example args (`bob, alice_task` at :23) |
+| #15 example fixture origin | YES — fixture-only example args (`bob, alice_task` at :27) |

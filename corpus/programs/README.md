@@ -10,8 +10,9 @@ one row without touching the others.
 Not runnable: no command parses `.tes` files yet — `docs/plans/` schedules the
 parser and interpreter against WP A/C. Until then
 `packages/tessera-interp/tests/corpus_programs.rs` checks the text-level
-invariants of this directory (layout, declared failures, anchor rows), so a
-drifted row fails a test instead of waiting for review.
+invariants of this directory (layout, declared failures, anchor rows, and the
+line citations inside those rows), so a drifted row fails a test instead of
+waiting for review.
 
 | Issue | Topic | Resolution link (anchored) |
 |---|---|---|
@@ -55,7 +56,12 @@ maintainer's reading of the spec, not a text match.
 
 Per-program READMEs list, against each of the seven issues, whether that
 program's syntax rests on that resolution (`YES`, with the citing line) or does
-not use it (`NONE`). The resolution link itself lives in the table above and
+not use it (`NONE`). A citing line is `:N`, the 1-based line of the program's
+own `.tes` module: for `#5`, `#7`, `#9` and `#10` the row must cite every line
+that carries the construct, and `corpus_programs.rs` fails a citation that names
+a blank line, a comment or an uncited evidence line. Editing a module therefore
+re-numbers its citations in the same commit — the row cannot rot behind a green
+`YES` column. The resolution link itself lives in the table above and
 nowhere else: a program row cites the issue number, so a corrected link is one
 edit and the old copies cannot go stale. `corpus/semantics/` holds the interpreter cases; the ones
 that name a program in this directory are listed in
@@ -87,6 +93,7 @@ above a later lookup. So the table reads come first and the guards that depend
 on them follow.
 
 `packages/tessera-interp/tests/corpus_programs.rs` enforces this invariant
-together with the one-`.tes`-plus-one-README layout, the anchor rows and the
-construct sets above, so none of them is review-enforced only. The parser (WP A)
+together with the one-`.tes`-plus-one-README layout, the anchor rows, their line
+citations and the construct sets above, so none of them is review-enforced only.
+The parser (WP A)
 replaces that text-level reading with a semantic one.

@@ -18,7 +18,11 @@
 //!    with `;` and would satisfy any weaker test;
 //! 4. the index's `Construct set` cell agrees with the program's own rows, and
 //!    the resolution links live in the index alone, not copied into every
-//!    program README.
+//!    program README;
+//! 5. every `:N` citation inside an anchor row names a real line of the module,
+//!    and a `YES` row for a derived anchor cites every evidence line — `#5`,
+//!    `#7`, `#9` and `#10` are exact against the source, so a citation that
+//!    rotated with an edit fails here instead of waiting for review.
 //!
 //! `#6`, `#8` and `#15` are not derived: whether a program composes a
 //! missing-production shape is a reading of the spec, not a text match, so those
@@ -34,6 +38,10 @@ use std::path::{Path, PathBuf};
 /// The anchor rows derived from source: `#5` (`return` reserved), `#7` (the
 /// statement separator), `#9` (`needs` grammar) and `#10` (literal typing).
 const DERIVED_ANCHORS: [u8; 4] = [5, 7, 9, 10];
+
+/// Every anchor row a program README carries. `#6`, `#8` and `#15` have no
+/// derived evidence set, but the citations they do carry must still name code.
+const ALL_ANCHORS: [u8; 7] = [5, 6, 7, 8, 9, 10, 15];
 
 /// One example program: its directory name, module text and README text.
 struct Program {
@@ -141,13 +149,55 @@ fn count(haystack: &str, needle: char) -> usize {
     haystack.chars().filter(|c| *c == needle).count()
 }
 
-/// How many `;`-terminated statements a rule body carries, comments ignored.
+/// How many `;`-terminated statements a rule body carries, comments and string
+/// literals ignored.
+///
+/// Counting lines instead would under-count a body that writes two statements on
+/// one line (`let t = tasks[id] or fail NotFound; require t.owner == by or fail
+/// Forbidden;` is two statements, one line), and counting raw `;` would count one
+/// inside a `"…"` literal.
 fn statements(body: &str) -> usize {
-    body.lines()
-        .map(strip_comment)
-        .map(str::trim)
-        .filter(|line| line.ends_with(';'))
-        .count()
+    let mut count = 0;
+    let mut in_literal = false;
+    let mut escaped = false;
+    for ch in body.lines().map(strip_comment).collect::<String>().chars() {
+        if in_literal {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_literal = false;
+            }
+        } else if ch == '"' {
+            in_literal = true;
+        } else if ch == ';' {
+            count += 1;
+        }
+    }
+    count
+}
+
+/// `statements` counts `;`-terminated statements, not lines that end in `;`.
+///
+/// The line-counting version returned 1 for the first case below — one line, two
+/// statements — so a rule body written compactly derived `#7` as `NONE` while
+/// the source plainly uses the separator. A `;` inside a string literal is not a
+/// statement, and a trailing comment is not either.
+#[test]
+fn statements_counts_statements_not_lines() {
+    assert_eq!(
+        statements("  let a = 1 or fail X; let b = 2 or fail Y;\n"),
+        2
+    );
+    assert_eq!(
+        statements("  let a = 1 or fail X;\n  let b = 2 or fail Y;\n"),
+        2
+    );
+    assert_eq!(statements("  require t.name != \"a;b\" or fail X;\n"), 1);
+    assert_eq!(statements("  let a = 1 or fail X; // and; not; this\n"), 1);
+    assert_eq!(statements("  return t;\n"), 1);
+    assert_eq!(statements("  // only prose; here\n"), 0);
 }
 
 /// Every `example <rule>(<args>) fails <Name>;` in a module, as
@@ -176,30 +226,35 @@ fn failing_examples(source: &str) -> Vec<(String, String, usize)> {
     examples
 }
 
-/// The `Used?` column of anchor row `#anchor`: `Some(true)` for `YES`,
-/// `Some(false)` for `NONE`, `None` for a missing or malformed row.
+/// The 1-based README line and `Used?` cell of anchor row `#anchor`, or `None`
+/// when the row is missing or malformed.
 ///
 /// A row is exactly `| <issue> | <used?> |`: the resolution link lives in the
 /// index and nowhere else, so a row that grows a link column again is malformed
 /// and fails here rather than drifting into twenty stale copies.
-fn anchor_row(readme: &str, anchor: u8) -> Option<bool> {
+fn anchor_cell(readme: &str, anchor: u8) -> Option<(usize, String)> {
     let prefix = format!("#{anchor} ");
-    readme
-        .lines()
-        .filter(|line| line.trim_start().starts_with('|'))
-        .find_map(|line| {
-            let cells: Vec<&str> = line.split('|').collect();
-            (cells.len() == 4 && cells[1].trim().starts_with(&prefix)).then(|| cells[2].trim())
-        })
-        .and_then(|used| {
-            if used.starts_with("YES") {
-                Some(true)
-            } else if used.starts_with("NONE") {
-                Some(false)
-            } else {
-                None
-            }
-        })
+    readme.lines().enumerate().find_map(|(index, line)| {
+        if !line.trim_start().starts_with('|') {
+            return None;
+        }
+        let cells: Vec<&str> = line.split('|').collect();
+        (cells.len() == 4 && cells[1].trim().starts_with(&prefix))
+            .then(|| (index + 1, cells[2].trim().to_owned()))
+    })
+}
+
+/// The `Used?` column of anchor row `#anchor`: `Some(true)` for `YES`,
+/// `Some(false)` for `NONE`, `None` for a missing or malformed row.
+fn anchor_row(readme: &str, anchor: u8) -> Option<bool> {
+    let (_, used) = anchor_cell(readme, anchor)?;
+    if used.starts_with("YES") {
+        Some(true)
+    } else if used.starts_with("NONE") {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 /// Whether the row for `anchor` is `YES` for this module, derived from source.
@@ -242,6 +297,78 @@ fn is_literal_typing(line: &str) -> bool {
         digits > 0 && tail[digits..].trim_start().starts_with(": Id<")
     });
     ascribed || has_calendar_date(line)
+}
+
+/// The 1-based lines of every `rule` declaration and its body, by brace depth:
+/// the declaration line plus the lines up to the `}` that returns depth to zero.
+fn rule_body_lines(source: &str) -> BTreeSet<usize> {
+    let mut lines = BTreeSet::new();
+    let mut depth = 0usize;
+    let mut inside = false;
+    for (index, line) in source.lines().enumerate() {
+        if !inside {
+            if !(line.starts_with("rule ") && line.contains('(')) {
+                continue;
+            }
+            inside = true;
+            depth = 0;
+        }
+        lines.insert(index + 1);
+        depth = depth
+            .saturating_add(count(line, '{'))
+            .saturating_sub(count(line, '}'));
+        if depth == 0 {
+            inside = false;
+        }
+    }
+    lines
+}
+
+/// The 1-based module lines that are evidence for `anchor` — the lines a `YES`
+/// row must cite: a `return` at statement position (`#5`), an `or fail` site in
+/// a rule body (`#7`), a `needs` clause (`#9`), an ascribed id literal or a
+/// calendar `Date` literal (`#10`), or an `example` call (`#15`).
+///
+/// `#6` and `#8` stay empty: whether a program composes a missing-production
+/// shape is a maintainer's reading of the spec, not a text match. `#15`'s claim —
+/// every `example` argument is a declared `fixture` — is text-decidable, which is
+/// what `example_arguments_are_declared_fixtures` pins.
+fn evidence_lines(anchor: u8, source: &str) -> BTreeSet<usize> {
+    let body = rule_body_lines(source);
+    source
+        .lines()
+        .enumerate()
+        .filter(|(index, line)| match anchor {
+            5 => line.trim_start().starts_with("return "),
+            7 => body.contains(&(index + 1)) && strip_comment(line).contains("or fail "),
+            9 => line.trim_start().starts_with("needs "),
+            10 => is_literal_typing(strip_comment(line)),
+            15 => line.trim_start().starts_with("example "),
+            _ => false,
+        })
+        .map(|(index, _)| index + 1)
+        .collect()
+}
+
+/// Every `:N` line citation in `text`. A `:` whose preceding character is
+/// alphanumeric is not a citation: `#12 : Id<Task>` is an ascription and
+/// `docs/spec/v0.1.md:640` is a spec link, not a line of this module.
+fn cited_lines(text: &str) -> BTreeSet<usize> {
+    let bytes = text.as_bytes();
+    let mut cited = BTreeSet::new();
+    for at in 0..bytes.len() {
+        if bytes[at] != b':' || (at > 0 && bytes[at - 1].is_ascii_alphanumeric()) {
+            continue;
+        }
+        let digits: String = text[at + 1..]
+            .chars()
+            .take_while(char::is_ascii_digit)
+            .collect();
+        if let Ok(line) = digits.parse() {
+            cited.insert(line);
+        }
+    }
+    cited
 }
 
 /// Whether `line` carries a `YYYY-MM-DD` calendar literal as a whole token.
@@ -434,6 +561,218 @@ fn an_anchor_row_carries_no_resolution_link_column() {
 
     let plain = "| Issue | Used? |\n|---|---|\n| #7 statement separator | YES — `;` at :17 |\n";
     assert_eq!(anchor_row(plain, 7), Some(true));
+}
+
+/// Every `:N` citation in an anchor row names a real line of the module, and a
+/// `YES` row for a derived anchor cites exactly its evidence lines.
+///
+/// This is the invariant the rows kept losing: `YES`/`NONE` is derived, but the
+/// citations inside the cell are prose, so editing a module rotates them and the
+/// row then points at a blank line, a comment or the wrong construct. Checking
+/// only `YES`/`NONE` left that drift to review — which is how these rows rotted
+/// across rounds while the derived column stayed green. Extra citations are
+/// rejected too, so a row cannot hedge with prose that happens to carry `:N`.
+/// `#6` and `#8` have no evidence set to be exact against; their citations only
+/// have to name real code.
+#[test]
+fn anchor_row_citations_point_at_their_evidence() -> Result<(), String> {
+    let mut checked = 0;
+    for program in programs()? {
+        let module: Vec<&str> = program.source.lines().collect();
+        for anchor in ALL_ANCHORS {
+            let Some((readme_line, used)) = anchor_cell(&program.readme, anchor) else {
+                continue;
+            };
+            let cited = cited_lines(&used);
+            for line in &cited {
+                assert!(
+                    *line > 0 && *line <= module.len(),
+                    "corpus/programs/{0}/README.md:{readme_line}: the `#{anchor}` row cites :{line}, but the module has only {1} lines",
+                    program.name,
+                    module.len()
+                );
+                assert!(
+                    !strip_comment(module[line - 1]).trim().is_empty(),
+                    "corpus/programs/{0}/README.md:{readme_line}: the `#{anchor}` row cites :{line}, which is blank or a comment, so it no longer names evidence",
+                    program.name
+                );
+                checked += 1;
+            }
+            if !used.starts_with("YES") {
+                continue;
+            }
+            let evidence = evidence_lines(anchor, &program.source);
+            if evidence.is_empty() {
+                // `#6` and `#8` have no derived evidence set, so their citations
+                // are a maintainer's pointer, only required to name real code.
+                continue;
+            }
+            let uncited: Vec<String> = evidence
+                .difference(&cited)
+                .map(|line| format!(":{line}"))
+                .collect();
+            assert!(
+                uncited.is_empty(),
+                "corpus/programs/{0}/README.md:{readme_line}: the `#{anchor}` row is YES but does not cite {uncited:?} — every evidence line must be cited",
+                program.name
+            );
+            let extra: Vec<String> = cited
+                .difference(&evidence)
+                .map(|line| format!(":{line}"))
+                .collect();
+            assert!(
+                extra.is_empty(),
+                "corpus/programs/{0}/README.md:{readme_line}: the `#{anchor}` row cites {extra:?} as evidence, but no line there carries the `#{anchor}` construct — a citation names its evidence or it is prose",
+                program.name
+            );
+        }
+    }
+    assert!(
+        checked > 0,
+        "the anchor rows must carry line citations for this check to mean anything"
+    );
+    Ok(())
+}
+
+/// A `:N` citation is told apart from the two colons that are not line numbers:
+/// an ascribed id literal (`#12 : Id<Task>`) and a spec link
+/// (`docs/spec/v0.1.md:640`). Reading either as a module line would make the
+/// citation check pass on text that names no line at all.
+#[test]
+fn cited_lines_reads_module_lines_and_not_ascriptions() {
+    assert_eq!(
+        cited_lines("`return` at :20"),
+        BTreeSet::from([20]),
+        "a bare `:N` is a module line"
+    );
+    assert_eq!(
+        cited_lines("ascribed id literal :9, :10, :11"),
+        BTreeSet::from([9, 10, 11]),
+        "a comma-separated citation list names every line"
+    );
+    assert!(
+        cited_lines("fixture bob: Id<User> = #12 : Id<Task>").is_empty(),
+        "`#12 : Id<Task>` is an ascription, not a citation of line 12"
+    );
+    assert!(
+        cited_lines("docs/spec/v0.1.md:640").is_empty(),
+        "a spec link is not a citation of line 640"
+    );
+    assert_eq!(
+        cited_lines("`:17`, :18 and https://example.test/a#b"),
+        BTreeSet::from([17, 18]),
+        "citations come from all the prose around them"
+    );
+}
+
+/// Evidence for `#7` is an `or fail` site inside a rule body — not the
+/// `module …;` header, not a `return`, and not a comment that mentions a
+/// failure. A row that cites a line outside that set is citing the wrong
+/// construct, which is the drift the citation check exists to catch.
+#[test]
+fn evidence_lines_name_the_construct_and_not_a_neighbour() {
+    let source = "module todo_basic @1;\n\n// `or fail NotFound` here is prose\nrule complete() {\n  let t = tasks[id] or fail NotFound;\n  return t;\n}\n\nexample complete() fails NotFound;\n";
+    assert_eq!(
+        evidence_lines(7, source),
+        BTreeSet::from([5]),
+        "only the `or fail` statement inside the rule body is #7 evidence"
+    );
+    assert_eq!(
+        evidence_lines(5, source),
+        BTreeSet::from([6]),
+        "#5 evidence is the `return` statement"
+    );
+    assert!(
+        evidence_lines(9, source).is_empty(),
+        "a module with no `needs` clause has no #9 evidence to cite"
+    );
+}
+
+/// A `YES` `#15` row cites the `example` lines, and each of those examples takes
+/// only declared `fixture` arguments — the corpus rule in `corpus/README.md`
+/// (fixture-only example arguments, issue #15). A literal or a computed
+/// expression as an `example` argument is what the rule forbids, and it also
+/// breaks the argument-token reading this list is derived from.
+#[test]
+fn example_arguments_are_declared_fixtures() -> Result<(), String> {
+    let mut checked = 0;
+    for program in programs()? {
+        let fixtures: BTreeSet<&str> = program
+            .source
+            .lines()
+            .filter_map(|line| line.trim().strip_prefix("fixture "))
+            .filter_map(|rest| rest.split(':').next())
+            .map(str::trim)
+            .collect();
+        let examples = evidence_lines(15, &program.source);
+        for line in &examples {
+            let text = program
+                .source
+                .lines()
+                .nth(line - 1)
+                .unwrap_or_default()
+                .trim();
+            let args = text
+                .split_once('(')
+                .and_then(|(_, rest)| rest.split_once(')'))
+                .map(|(args, _)| args)
+                .unwrap_or_default();
+            for arg in args.split(',').map(str::trim).filter(|arg| !arg.is_empty()) {
+                assert!(
+                    fixtures.contains(arg),
+                    "corpus/programs/{0}/: the example on line {line} passes `{arg}`, which is not a declared `fixture` — issue #15 requires fixture-only example arguments",
+                    program.name
+                );
+                checked += 1;
+            }
+        }
+    }
+    assert!(
+        checked > 0,
+        "the corpus must declare at least one example argument to check"
+    );
+    Ok(())
+}
+
+/// Every anchor row any program carries is `| <issue> | <used?> |` — exactly two
+/// cells — for all seven anchors, not only the derived ones.
+///
+/// `anchor_rows_match_the_program_source` only walks `DERIVED_ANCHORS`, so a
+/// `#6`, `#8` or `#15` row that regrew a resolution-link column would keep that
+/// test green while re-introducing the twenty stale copies the link-free row
+/// exists to prevent. `anchor_cell` already rejects the extra cell; this makes
+/// that rejection reach the non-derived rows.
+#[test]
+fn every_anchor_row_keeps_the_link_out_of_the_readme() -> Result<(), String> {
+    let mut checked = 0;
+    for program in programs()? {
+        for anchor in ALL_ANCHORS {
+            let prefix = format!("#{anchor} ");
+            let found = program.readme.lines().any(|line| {
+                let cells: Vec<&str> = line.split('|').collect();
+                line.trim_start().starts_with('|')
+                    && cells.len() > 1
+                    && cells[1].trim().starts_with(&prefix)
+            });
+            assert!(
+                found,
+                "corpus/programs/{0}/README.md must carry a `#{anchor}` anchor row",
+                program.name
+            );
+            assert!(
+                anchor_row(&program.readme, anchor).is_some(),
+                "corpus/programs/{0}/README.md: the `#{anchor}` row must be `| <issue> | YES…/NONE… |` — a resolution-link column belongs in the index alone",
+                program.name
+            );
+            checked += 1;
+        }
+    }
+    assert_eq!(
+        checked,
+        programs()?.len() * ALL_ANCHORS.len(),
+        "every program must be checked for every anchor"
+    );
+    Ok(())
 }
 
 /// The `#5`, `#7`, `#9` and `#10` rows match what the module actually uses.

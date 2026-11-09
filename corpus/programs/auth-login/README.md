@@ -46,6 +46,6 @@ so the module states only what the rule preserves.
 | #6 keywords without productions | NONE |
 | #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :17, :18 |
 | #8 G4-fragment productions | NONE |
-| #9 parameterized capability grammar | YES — `needs` clause (`:9`) |
+| #9 parameterized capability grammar | YES — `needs` clauses (`:9`, `:10`) |
 | #10 literal collisions / id-literal typing | YES — ascribed id literal :12, :13 |
 | #15 example fixture origin | YES — fixture-only example args (`bob, wrong_password` at :25, :26) |

@@ -17,5 +17,5 @@ here is a composition of already-recorded resolutions.
 | #7 statement separator | YES — `;` terminates every statement, including the `or fail` forms at :19, :20, :21 |
 | #8 G4-fragment productions | NONE |
 | #9 parameterized capability grammar | YES — `needs` clause (`:12`) |
-| #10 literal collisions / id-literal typing | YES — ascribed id literal :14, :15; `Date` literal :16 |
+| #10 literal collisions / id-literal typing | YES — ascribed id literal :14, :15; `Date` literal :16; the guard's `Date` literal :21 |
 | #15 example fixture origin | YES — fixture-only example args (`bob, alice_task, opened_on` at :28) |
