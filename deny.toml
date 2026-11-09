@@ -10,8 +10,9 @@
 # Pinned to 0.20.2 — bin/setup installs exactly that version
 # (`cargo install --locked cargo-deny --version 0.20.2 --force`) and bin/check
 # runs `cargo deny --locked check advisories` from the repo root, against the
-# committed Cargo.lock. The pin keeps every box on the same scanner and the
-# same rule set; the advisory database itself moves with RustSec.
+# committed Cargo.lock. bin/setup installs the pin; bin/check only warns when
+# another cargo-deny shadows it on PATH, and then that scanner grades the
+# change. The advisory database itself moves with RustSec.
 #
 # Not to be confused with `tessera audit` (spec §8, packages/tessera-pkg): that
 # is the language's own package audit and has nothing to do with Rust crates.

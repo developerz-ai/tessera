@@ -20,6 +20,9 @@ mod scripts {
 
     struct Sandbox {
         root: PathBuf,
+        /// Make the cargo-deny stub report an unreadable advisory database
+        /// instead of a scanner failure.
+        broken_advisory_db: bool,
     }
 
     impl Sandbox {
@@ -70,13 +73,28 @@ if [[ "$call" == "${SCRIPT_FAIL:-}" ]]; then
     printf 'injected failure: %s\n' "$call" >&2
     exit 42
 fi
+if [[ "${SCRIPT_DB_FAIL:-0}" == "1" && "$call" == "cargo deny --locked check advisories" ]]; then
+    printf 'error: failed to load advisory database\n' >&2
+    exit 1
+fi
 if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
 "#,
                 )
                 .unwrap();
                 fs::set_permissions(path, fs::Permissions::from_mode(0o755)).unwrap();
             }
-            Self { root }
+            Self {
+                root,
+                broken_advisory_db: false,
+            }
+        }
+
+        /// Make the cargo-deny stub report an unreadable advisory database:
+        /// `cargo deny --locked check advisories` exits 1 with "failed to
+        /// load advisory database" — the scanner ran, the database did not
+        /// load.
+        fn break_advisory_db(&mut self) {
+            self.broken_advisory_db = true;
         }
 
         fn run(&self, script: &str, fail: &str) -> Output {
@@ -86,6 +104,10 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
                 .env("PATH", self.root.join("tools"))
                 .env("SCRIPT_LOG", self.root.join("calls"))
                 .env("SCRIPT_FAIL", fail)
+                .env(
+                    "SCRIPT_DB_FAIL",
+                    if self.broken_advisory_db { "1" } else { "0" },
+                )
                 // bin/setup looks for the pinned cargo-deny in $CARGO_HOME/bin.
                 // Keep HOME and CARGO_HOME inside the sandbox, so a cargo-deny
                 // installed on this machine cannot change the call list.
@@ -190,6 +212,9 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
     ///   environment is blamed, not the change.
     /// * `bin/check` turns a reported advisory into 1 — the change is red —
     ///   and prints the scanner's own output on stdout.
+    ///
+    /// The exit-42 stub is not the only failure mode: the advisory database
+    /// has one of its own (`scripts_check_treats_an_unreadable_advisory_database_as_an_environment_failure`).
     fn injected(call: &str) -> Option<(i32, Seen)> {
         match call {
             "rustc --version" | "cargo deny --version" => None,
@@ -262,7 +287,50 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
             let out = sandbox.run(script, "cargo deny --version");
             assert!(out.status.success(), "{script}: {out:?}");
             sandbox.assert_calls(calls);
+            // The warning is the point of the test: bin/check says which
+            // version is pinned and that PATH has another one, bin/setup says
+            // which cargo-deny is on PATH. Deleting either warning has to
+            // fail here.
+            let out_debug = format!("{out:?}");
+            let stdout = String::from_utf8(out.stdout).unwrap();
+            let stderr = String::from_utf8(out.stderr).unwrap();
+            if script == "setup" {
+                assert!(
+                    stdout.contains("cargo deny on PATH"),
+                    "{script}: {out_debug}"
+                );
+            } else {
+                assert!(
+                    stderr.contains("is pinned — run bin/setup"),
+                    "{script}: {out_debug}"
+                );
+            }
         }
+    }
+
+    #[test]
+    fn scripts_check_treats_an_unreadable_advisory_database_as_an_environment_failure() {
+        let mut sandbox = Sandbox::new();
+        // The scanner ran, but the advisory database could not be loaded:
+        // bin/check must exit 75 (the environment), not 1 (a red change
+        // blamed on an advisory that was never reported).
+        sandbox.break_advisory_db();
+        let out = sandbox.run("check", "");
+        assert_eq!(out.status.code(), Some(75), "{out:?}");
+        // The scan ran and its output was printed; the guards never did.
+        sandbox.assert_calls(&CHECK[..6]);
+        let out_debug = format!("{out:?}");
+        let stdout = String::from_utf8(out.stdout).unwrap();
+        let stderr = String::from_utf8(out.stderr).unwrap();
+        assert!(
+            stdout.contains("failed to load advisory database"),
+            "{out_debug}"
+        );
+        assert!(
+            stderr.contains("the RustSec advisory database could not be read"),
+            "{out_debug}"
+        );
+        assert!(!stdout.contains("green"));
     }
 
     #[test]
