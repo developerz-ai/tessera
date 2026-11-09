@@ -6,10 +6,15 @@ table entry. The literal is inlined (`t.created == 2026-10-22` in the `new`
 constraint chain, `t.due.value >= 2026-10-22` in the law) because §4 limits
 fixture uses to `example` declarations and fixture initializers — the `created`
 fixture appears only as an example argument. The `new` constraint list pins
-`t.id == <the created task's Id>` beside `t.owner == by`, `t.due == due`,
-`t.status is Open`, `t.created == 2026-10-22`, so every field of `new t: Task` is
-uniquely determined (§14). No feature here depends on the still-open question of
-Date arithmetic (`docs/spec/open-questions.md`).
+`t.id == <the created task's Id>` beside `t.owner == by`, `t.title == title`,
+`t.due == due`, `t.status is Open` and `t.created == 2026-10-22`, so every field
+`Task` declares (`id`, `owner`, `title`, `status`, `created`, `due`) is uniquely
+determined, as `docs/spec/v0.1.md:254` requires — `title` included, bound by the
+rule's own `title: Text` parameter and fed by the `task_title` fixture, which the
+example consumes. That is the same all-fields-determined shape
+[`auth-login/`](../auth-login/README.md) gives `Session`. No feature here depends
+on the still-open question of Date arithmetic
+(`docs/spec/open-questions.md`).
 
 ## Issue anchors
 

@@ -11,15 +11,17 @@ needs clock: Clock;
 fixture created: Date = 2026-10-22;
 fixture bob: Id<User> = #1 : Id<User>;
 fixture alice_task: Id<Task> = #12 : Id<Task>;
+fixture task_title: Text = "ship the due-date check";
 
-rule create(by: Id<User>, id: Id<Task>, due: Date) {
-  new t: Task where t.id == id, t.owner == by, t.due == due, t.status is Open, t.created == 2026-10-22;
+rule create(by: Id<User>, id: Id<Task>, title: Text, due: Date) {
+  new t: Task where t.id == id, t.owner == by, t.title == title, t.due == due, t.status is Open, t.created == 2026-10-22;
 }
 
 law due_set_once: forall t in tasks. t.due is Some => (t.due.value >= 2026-10-22);
 
 // #10: the Date literal `2026-10-22` is a Date value, inlined in the `new` chain
 // and the law (§4 keeps fixture uses to example declarations and fixture
-// initializers); the fixture `created` supplies the example's `due` argument.
+// initializers); the fixtures `task_title` and `created` supply the example's
+// `title` and `due` arguments.
 
-example create(bob, alice_task, created) fails NotFound;
+example create(bob, alice_task, task_title, created) fails NotFound;
