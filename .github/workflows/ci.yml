@@ -23,7 +23,8 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # bin/setup compiles cargo-deny from source, bin/check runs the whole gate.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -41,4 +42,6 @@ jobs:
       - run: bin/setup
       - run: bin/dev
       - run: bin/stop
+      # The gate includes the cargo-deny dependency advisory scan (deny.toml):
+      # a RustSec advisory against the committed Cargo.lock fails this job.
       - run: bin/check

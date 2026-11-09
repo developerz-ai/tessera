@@ -1,0 +1,74 @@
+# Dependency advisories — the RustSec scan the gate runs.
+#
+# Tool: cargo-deny, not cargo-audit. One committed file holds the whole rule
+# set and every ignore has to name an id and a reason, so no advisory can be
+# silenced silently. cargo-deny writes the advisory body to stderr and exits
+# non-zero when it finds one: bin/check prints that output and exits 1 (the
+# change is red). When the scanner or the advisory database cannot be reached
+# at all, bin/check exits 75 (the environment, not the change). The step is
+# never skipped.
+# Pinned to 0.20.2 — bin/setup installs exactly that version
+# (`cargo install --locked cargo-deny --version 0.20.2 --force`) and bin/check
+# runs `cargo deny --locked check advisories` from the repo root, against the
+# committed Cargo.lock. The pin keeps every box on the same scanner and the
+# same rule set; the advisory database itself moves with RustSec.
+#
+# Not to be confused with `tessera audit` (spec §8, packages/tessera-pkg): that
+# is the language's own package audit and has nothing to do with Rust crates.
+#
+# Rule for this file: advisories.ignore starts EMPTY. Every ignore ever needed
+# names the advisory and a reason — never a bare id, never a blanket crate
+# ignore:
+#
+#   { id = "RUSTSEC-YYYY-NNNN", reason = "why it is safe — expires 2027-02-07" }
+#
+# The expiry rides inside the reason on purpose: the pinned scanner parses
+# exactly two keys in an ignore entry — cargo-deny 0.20.2's IgnoreId is
+# { id, reason } (src/advisories/cfg.rs) — and a third key is refused:
+#
+#   error[unexpected-keys]: found 1 unexpected keys, expected: ["id", "reason"]
+#
+# So the 90-day expiry is a date the reason carries, not a key the scanner
+# would take. `unmaintained` stays "all" (an error) and `yanked` stays "warn";
+# never "none".
+#
+# OBSERVED FAILING RUN — cargo-deny reports a RustSec advisory and exits
+# non-zero. Reproduced with cargo-deny 0.20.2 against a scratch crate that
+# pins time 0.1.x:
+#
+#   REPO=/path/to/tessera
+#   mkdir -p /tmp/rustsec-repro/src && cd /tmp/rustsec-repro
+#   printf '[package]\nname = "rustsec-repro"\nversion = "0.1.0"\nedition = "2021"\n\n[dependencies]\ntime = "0.1.44"\n' > Cargo.toml
+#   printf 'fn main() {}\n' > src/main.rs
+#   cargo generate-lockfile
+#   cp "$REPO/deny.toml" .          # the committed rule set, unchanged
+#   cargo deny --locked check advisories
+#
+# stdout:
+#
+#   advisories FAILED
+#
+# stderr (advisory body elided):
+#
+#   error[vulnerability]: Potential segfault in the time crate
+#     ┌─ /tmp/rustsec-repro/Cargo.lock:3:1
+#     │
+#   3 │ time 0.1.45 registry+https://github.com/rust-lang/crates.io-index
+#     │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ security vulnerability detected
+#     │
+#     ├ ID: RUSTSEC-2020-0071
+#     ├ Advisory: https://rustsec.org/advisories/RUSTSEC-2020-0071
+#     ├ ### Impact
+#     …
+#     ├ Solution: Upgrade to >=0.2.23 (try `cargo update -p time`)
+#     ├ time v0.1.45
+#       └── rustsec-repro v0.1.0
+#
+# exit code: 1
+
+[advisories]
+# Nothing is silenced. See the rule above for what an ignore must look like.
+ignore = []
+# Unmaintained crates are an error; yanked versions are a warning.
+unmaintained = "all"
+yanked = "warn"

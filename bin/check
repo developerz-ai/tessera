@@ -4,9 +4,59 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 step() { printf '\n\033[1m▸ %s\033[0m\n' "$*"; }
+warn() { printf '\033[0;33m!\033[0m  %s\n' "$*" >&2; }
+fail() { printf '\033[0;31m✘\033[0m  %s\n' "$*" >&2; }
+
+# RustSec dependency advisories — cargo-deny, rule set in deny.toml at the repo
+# root, against the committed Cargo.lock.
+#
+# Exit codes (see .claude/skills/verify-change/SKILL.md):
+#   0  no advisory
+#   75 the scanner or the advisory database is unreachable — the gate could not
+#      grade the change, so the environment is blamed, not the change
+#   1  cargo-deny reported an advisory — the change is red
+advisories() {
+  local pinned=0.20.2 version fetched output rc
+
+  if ! command -v cargo-deny >/dev/null 2>&1; then
+    warn "cargo-deny is not installed — run bin/setup (it installs cargo-deny $pinned)"
+    exit 75
+  fi
+  version="$(cargo deny --version 2>/dev/null | awk '{print $2}' || true)"
+  if [ "$version" != "$pinned" ]; then
+    warn "cargo-deny ${version:-unknown} is on PATH, $pinned is pinned — run bin/setup"
+  fi
+
+  # The advisory database lives on the network. Unreachable database = the gate
+  # could not grade the change: environment, never red.
+  if ! fetched="$(cargo deny fetch db 2>&1)"; then
+    printf '%s\n' "$fetched" >&2
+    warn "the RustSec advisory database could not be fetched"
+    exit 75
+  fi
+
+  # Capture the scanner's exit code explicitly: set -e must not abort before
+  # the result is classified, and the scanner's own output must be printed.
+  set +e
+  output="$(cargo deny --locked check advisories 2>&1)"
+  rc=$?
+  set -e
+  printf '%s\n' "$output"
+  if [ "$rc" -ne 0 ]; then
+    case "$output" in
+      *"failed to load advisory database"*|*"failed to fetch advisory database"*)
+        warn "the RustSec advisory database could not be read — cargo-deny $pinned is required (run bin/setup)"
+        exit 75
+        ;;
+    esac
+    fail "cargo-deny reported advisories (exit $rc) — see above"
+    exit 1
+  fi
+}
 
 step "fmt";      cargo fmt --all -- --check
 step "clippy";   cargo clippy --workspace --all-targets --locked -- -D warnings
 step "test";     cargo test --workspace --locked --quiet
+step "advisories"; advisories
 step "guards";   cargo xtask all
 printf '\n\033[0;32m✔ bin/check green\033[0m\n'

@@ -15,9 +15,9 @@ passes it locally passes everywhere.
 
 | Step | Command | What it is |
 |------|---------|------------|
-| install | `bin/setup` | rustup show active-toolchain && mkdir -p tmp && cargo fetch --locked && cargo build --workspace |
+| install | `bin/setup` | rustup show active-toolchain && mkdir -p tmp && cargo fetch --locked && cargo build --workspace && cargo install --locked cargo-deny --version 0.20.2 --force |
 | run | `bin/dev` | cargo run -q -p tessera -- help — on developerz.ai runs, start it with code_bash_background when you need a running stack |
-| prove | `bin/check` | cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked --quiet && cargo xtask all |
+| prove | `bin/check` | cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked --quiet && cargo deny --locked check advisories && cargo xtask all |
 | stop | `bin/stop` | true — on developerz.ai runs, the platform runs this when your session ends — do not stop the stack yourself |
 
 ## Rules
@@ -34,7 +34,7 @@ red. Exit 1 cannot carry that difference, so one code is reserved:
 | Exit | Means | What the platform does |
 |------|-------|------------------------|
 | 0 | the change passes | commit it |
-| 75 | a resource the gate NEEDS is unreachable (a database, a service, a credential) — it refused to grade | refuse the commit, and blame the environment, never the change |
+| 75 | a resource the gate NEEDS is unreachable (a database, a service, a credential, the advisory scanner missing, or the advisory database unfetchable) — it refused to grade | refuse the commit, and blame the environment, never the change |
 | any other non-zero | the gate ran and the change is red | refuse the commit, and blame the change |
 
 - Guard preconditions FIRST and `exit 75` when one is unmet. `exit 1` there tells the

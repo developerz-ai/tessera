@@ -11,6 +11,7 @@
       "Bash(cargo fmt:*)",
       "Bash(cargo run:*)",
       "Bash(cargo xtask:*)",
+      "Bash(cargo deny:*)",
       "Bash(cargo metadata:*)",
       "Bash(cargo tree:*)",
       "Bash(git status)",

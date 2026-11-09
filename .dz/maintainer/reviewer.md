@@ -7,7 +7,7 @@
 
 ## Stack
 
-Rust + Cargo (1.98.0, rustup). The gate is `bin/check` (`cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked --quiet && cargo xtask all`): a change that does not pass it is not proven, whatever its description says.
+Rust + Cargo (1.98.0, rustup). The gate is `bin/check` (`cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked --quiet && cargo deny --locked check advisories && cargo xtask all`): a change that does not pass it is not proven, whatever its description says.
 
 ## Review conventions
 - Reject any `unwrap`/`expect`/`panic!`/`todo!`/`unimplemented!` outside tests — clippy denies them workspace-wide.
@@ -24,9 +24,9 @@ Rust + Cargo (1.98.0, rustup). The gate is `bin/check` (`cargo fmt --all -- --ch
 - Require conventional commits scoped by crate (`feat(syntax): …`, scope = crate without the `tessera-` prefix), branch `<type>/<slug>`, one concern per PR with `Closes #N`.
 
 ## Gates that matter
-- `bin/check` is the only merge gate and CI runs it verbatim: `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, `cargo xtask all` (tier boundaries, doc links, CLAUDE.md ≤ 16 KiB). A proven PR means this command green, stated in the PR.
-- A red `xtask boundaries` means a tier violation — that alone blocks merge.
-- From M4: interpreter-vs-backend parity on every corpus example is also a merge gate.
+- `bin/check` is the only merge gate and CI runs it verbatim: `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets --locked -- -D warnings`, `cargo test --workspace --locked`, dependency advisories (`cargo deny --locked check advisories`, rule set in the committed `deny.toml`, against the committed `Cargo.lock`), `cargo xtask all` (tier boundaries, doc links, CLAUDE.md ≤ 16 KiB). A proven PR means this command green, stated in the PR.
+- A RustSec advisory against the committed `Cargo.lock` is red like any other failing step — flag it; the scanner is pinned to cargo-deny 0.20.2, installed by `bin/setup`, and the rule set (`deny.toml`) starts with an empty `advisories.ignore`.
+- `bin/check` exits 75 when the scanner or the advisory database is unreachable: that is the environment, not the change — never a finding against the PR. Any other non-zero exit is the gate grading the change, and it is red.
 
 ## Never flag
 - Formatting — `bin/fmt` / rustfmt owns it (`rustfmt.toml`: edition 2024, max_width 100, field init shorthand); never ask for manual format changes.

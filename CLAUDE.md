@@ -45,7 +45,7 @@ Run from the repo root.
 | Task | Command |
 |---|---|
 | fresh clone → ready | `bin/setup` (idempotent) |
-| **the gate** (≡ CI) | `bin/check` — fmt check, clippy `-D warnings`, tests, `cargo xtask all`. Green = mergeable |
+| **the gate** (≡ CI) | `bin/check` — fmt check, clippy `-D warnings`, tests, dependency advisories (`cargo deny --locked check advisories`), `cargo xtask all`. Green = mergeable |
 | format | `bin/fmt` |
 | build | `cargo build` |
 | test | `cargo test --workspace` · one crate: `cargo test -p tessera-syntax` · one name: `cargo test -p tessera-syntax -- <name>` |

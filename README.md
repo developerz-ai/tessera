@@ -104,11 +104,11 @@ Prerequisites: [rustup](https://rustup.rs) and Git on `PATH`. `jq` is optional
 
 ```sh
 git clone https://github.com/developerz-ai/tessera && cd tessera
-bin/setup  # activate pinned toolchain, fetch and build with --locked; safe to repeat
+bin/setup  # activate pinned toolchain, fetch and build with --locked, install the pinned cargo-deny scanner; safe to repeat
 bin/dev    # print CLI help, including command milestones, then exit 0
 bin/stop   # no-op; safe to repeat, nothing runs in the background
 bin/fmt    # format the workspace
-bin/check  # the gate: fmt check, Clippy, tests, repo guards
+bin/check  # the gate: fmt check, Clippy, tests, dependency advisories (cargo-deny), repo guards
 ```
 
 Setup uses the committed `Cargo.lock` without updating it. The scaffold is a CLI,

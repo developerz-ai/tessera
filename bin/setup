@@ -17,4 +17,27 @@ git config core.symlinks true             # AGENTS.md -> CLAUDE.md
 mkdir -p tmp
 cargo fetch --quiet --locked
 cargo build --quiet --workspace --locked
-ok "workspace builds. Next: bin/check"
+ok "workspace builds"
+
+# The dependency advisory scanner bin/check needs (see deny.toml). Pinned, so
+# every box reads the same rule set. cargo skips an already-installed EXACT
+# version; a DIFFERENT version sitting in the install root has to be replaced,
+# and cargo refuses that without --force.
+CARGO_DENY_VERSION=0.20.2
+cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
+installed="$("$cargo_bin/cargo-deny" --version 2>/dev/null | awk '{print $2}' || true)"
+if [ "$installed" = "$CARGO_DENY_VERSION" ]; then
+  ok "cargo-deny $CARGO_DENY_VERSION"
+else
+  cargo install --locked cargo-deny --version "$CARGO_DENY_VERSION" --force \
+    || die "cargo-deny $CARGO_DENY_VERSION install failed — bin/check runs it, so a clone without it is not ready"
+  ok "cargo-deny $CARGO_DENY_VERSION"
+fi
+
+# Another cargo-deny earlier on PATH would shadow the pinned one; say so rather
+# than let the gate fail later on a version the maintainer did not choose.
+on_path="$(cargo deny --version 2>/dev/null | awk '{print $2}' || true)"
+[ "$on_path" = "$CARGO_DENY_VERSION" ] \
+  || echo "!  cargo deny on PATH is ${on_path:-not found}, pinned is $CARGO_DENY_VERSION ($cargo_bin/cargo-deny)"
+
+ok "Next: bin/check"

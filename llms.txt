@@ -5,7 +5,7 @@
 ## Resolve before you quote
 
 - `cargo run -q -p tessera -- help`: every CLI command this build knows, with the milestone that ships it.
-- `bin/check`: the gate (fmt, clippy -D warnings, tests, repo guards). CI runs exactly this.
+- `bin/check`: the gate (fmt, clippy -D warnings, tests, dependency advisories, repo guards). CI runs exactly this.
 - `cargo xtask boundaries`: crate tier violations; the tier table is xtask/src/tiers.rs.
 - `gh issue list --label spec:ambiguity`: spec gaps that are open right now.
 

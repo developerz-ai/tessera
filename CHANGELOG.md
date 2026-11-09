@@ -10,6 +10,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Cargo workspace: one crate per work package, tier-enforced (`cargo xtask boundaries`).
 - `tessera` CLI scaffold listing every spec command with its milestone; `--json` diagnostics.
 - Gate (`bin/check`), CI, GitHub Pages site, agent setup (`CLAUDE.md`, `.claude/`).
+- Dependency advisory scan (`cargo deny --locked check advisories` against the committed `deny.toml`) is part of the gate and runs in CI.
 
 ### Changed
 - Spec §13 resolves K2: WP J owns registry-free git resolution alongside hashing, content-addressed storage, lockfile and audit; discovery is an optional git short-name-to-URL index, not a central registry and not required for dependency resolution ([#19](https://github.com/developerz-ai/tessera/issues/19)).
