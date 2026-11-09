@@ -16,9 +16,13 @@ fixture alice_task: Id<Task> = #12 : Id<Task>;
 // compares the two domains: `t.owner` and `u.id` are both `Id<User>`.
 law owner_is_named_user: forall t in tasks. forall u in users. (t.owner == u.id) => (u.name != "");
 
-// Mirror #10 edge — no id domain crosses into another. The fixtures above are
-// `Id<User>` and `Id<Task>`; the law compares `t.owner` (an `Id<User>`) with
-// `u.id` (also an `Id<User>`), never an `Id<Task>` against an `Id<User>` value.
+// Mirror #10 edge — no id domain crosses into another. The law above carries no
+// `with (...)` clause and its one comparison is `t.owner == u.id`: `t.owner` (the
+// `owner` column of the quantified `Task` row) and `u.id` (the key of the
+// quantified `User` row) are both `Id<User>`. The form it deliberately does not
+// take is `t.id != u.id`: `t.id` is an `Id<Task>`, `u.id` an `Id<User>`, so that
+// comparison is a nominal type mismatch (§3), not a domain edge — it would
+// certify nothing about id domains, and the corpus's own rule rejects it.
 
 example tag(bob, alice_task) fails NotFound;
 
