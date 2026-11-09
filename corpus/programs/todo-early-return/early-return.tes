@@ -1,6 +1,7 @@
 module todo_early_return @1;
 
 type Status = Open | Done(at: Instant);
+type User = { id: Id<User>, name: Text };
 type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
 
 state tasks: Table<Task> key id;

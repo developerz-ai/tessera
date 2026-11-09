@@ -1,6 +1,7 @@
 module todo_output_stream @1;
 
 type Status = Open | Done(at: Instant);
+type User = { id: Id<User>, name: Text };
 type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant };
 type Entry = { task: Id<Task>, status: Text };
 

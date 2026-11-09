@@ -3,6 +3,7 @@ module todo_backlog @1;
 type Status = Open | Done(at: Instant);
 type Task = { id: Id<Task>, owner: Id<User>, title: Text, status: Status, created: Instant, due: Maybe<Date> };
 type User = { id: Id<User>, name: Text, token: Text };
+type Entry = { task: Id<Task>, action: Text };
 
 state tasks: Table<Task> key id;
 state users: Table<User> key id;
@@ -17,7 +18,7 @@ fixture cutoff: Date = 2026-10-22;
 rule archive(by: Id<User>, id: Id<Task>, on: Date) needs clock {
   let t = tasks[id] or fail NotFound;
   require t.owner == by or fail NotFound;
-  require t.due is Some || (t.due.value < on) or fail Stale;
+  require (t.due is Some) && (t.due.value < on) or fail Stale;
   tasks[id].status = Done(clock.now) unless t.status is Done;
   output ledger += { task: id, action: "archived" };
   return id;

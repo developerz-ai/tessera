@@ -9,7 +9,6 @@ output ledger: Stream<Entry>;
 needs clock: Clock;
 
 fixture bob: Id<User> = #1 : Id<User>;
-fixture alice_user: Id<User> = #12 : Id<User>;
 fixture admin_role: Text = "admin";
 
 rule grant(u: Id<User>, role: Text) {

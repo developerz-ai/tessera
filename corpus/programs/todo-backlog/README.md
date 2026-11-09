@@ -1,12 +1,11 @@
 # todo-backlog
 
-`backlog.tes` — every anchor in one program, one construct each: `or fail` (#7),
-Date literal and id-literal typing (#10), fixture-only example args (#15), `return`
-as reserved keyword (#5) — and #9 precedence across `||`, `=>`, `in`, and
-`with` in one `forall` law. Guarded payload access in `archive` follows the §5
-positive-fact ordering (`t.due is Some` then `t.due.value`), not a falsy `||` arm:
-the stale-due check reads the payload only where it is already positively guarded,
-per docs/spec/v0.1.md:546-547.
+`backlog.tes` — a `require` chain over a guarded `Maybe` payload: the stale-due
+check is the §3.1 ordered conjunction `(t.due is Some) && (t.due.value < on)`, so
+the payload projection is evaluated only after the positive test that grants it
+(docs/spec/v0.1.md:546-547). Anchors: `or fail` (#7), Date literal and id-literal
+typing (#10), fixture-only example args (#15), `return` as reserved keyword (#5)
+— and #9 precedence across `=>`, `in`, `&&`, and `with` in one `forall` law.
 
 This module does not use the #6 `where`-chain or the #8 partitioned-store shape:
 there is no `new ... where` rule and no shard discriminator here — those two
