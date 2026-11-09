@@ -214,10 +214,11 @@ that ships with this contract. It:
 
 1. validates every worked case against the schema and against the ordering
    rule;
-2. asserts that `corpus/semantics/` holds exactly the three worked cases;
+2. asserts that `corpus/semantics/` holds exactly the worked cases its `CASES`
+   list names, and no other case file;
 3. asserts that reading a case twice yields identical bytes and an identical
    verdict;
-4. asserts that the three cases collectively cover an `Ok(v)` result, a
+4. asserts that the cases collectively cover an `Ok(v)` result, a
    `Failed(Name)` result, and logged `clock`, `random` and `id` inputs;
 5. rejects, one rule at a time, a case with a missing required field, a
    mistagged result, a misordered call sequence, a malformed input log, a
@@ -239,6 +240,8 @@ cargo test -p tessera-interp --test semantics_schema
 | [`successful-commit.json`](../../../corpus/semantics/successful-commit.json) | Seeded initial state, one ordered call, a logged clock reading, an `Ok(v)` result, the committed final state and one delivered output. |
 | [`failed-call.json`](../../../corpus/semantics/failed-call.json) | A `Failed(Name)` result: the state is unchanged, the buffered output is discarded, and the inputs consumed by the aborted call stay in the log. |
 | [`nondeterministic-inputs.json`](../../../corpus/semantics/nondeterministic-inputs.json) | Two ordered calls consuming logged `clock`, `random` and `id` inputs, with the deterministic expected state and the ordered expected outputs. |
+| [`auth-login-success.json`](../../../corpus/semantics/auth-login-success.json) | A case against a worked example program (`corpus/programs/auth-login/`): the `require … or fail` password guard passes, a `new` row commits to a second table, one `clock.now` reading is logged, and the call publishes `Ok(v)`. |
+| [`auth-login-failure.json`](../../../corpus/semantics/auth-login-failure.json) | The same program's other outcome: the password guard trips, so the call publishes `Failed(NotFound)` with the state unchanged and no row created. |
 
 ## What this contract does not decide
 

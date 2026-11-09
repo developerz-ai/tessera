@@ -47,8 +47,12 @@ Not runnable: no command compiles `.tes` files yet — the plans
 
 Per-program READMEs list — per issue row — whether that program's syntax rests on
 that resolution (`YES`), composes two (`YES / YES` with a note), or does not use
-it (`NONE`). `corpus/semantics/` is not touched: that directory is pinned by
-`packages/tessera-interp/tests/semantics_schema.rs` (exactly three cases).
+it (`NONE`). `corpus/semantics/` holds the interpreter cases; the ones that name a
+program in this directory are listed in
+[`../README.md`](../README.md#semantics-cases-which-programs-they-reach-and-the-gap-that-is-deferred),
+which also records why a todo-domain case is deferred and an auth-domain case is not.
+A program's case is added by naming it in the `CASES` list of
+`packages/tessera-interp/tests/semantics_schema.rs`, the single place the count lives.
 
 ## Corpus invariant: a declared failure must be reachable
 

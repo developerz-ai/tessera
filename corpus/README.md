@@ -38,3 +38,36 @@ Examples and tests for language behavior, kept separately from the toolchain cra
 Schedule: the schema (`packages/tessera-interp/schema/semantics-case.schema.json`)
 is a frozen M0 interface; the programs (§2–§7) become parser and interpreter test
 inputs when WP A/C land, the `negative/` suite when WP B lands.
+
+## Semantics cases: which programs they reach, and the gap that is deferred
+
+A semantics case is scoped to one module by name, so a case names a program:
+[`semantics/auth-login-success.json`](semantics/auth-login-success.json) and
+[`semantics/auth-login-failure.json`](semantics/auth-login-failure.json) are the two
+outcomes of
+[`programs/auth-login/login.tes`](programs/auth-login/login.tes) — so the case's
+`initial_state` seeds the `users` row that a program's `example` can never see, since
+an `example` runs against a fresh store. The success case takes the
+`require u.password == attempt or fail NotFound;` guard and commits the
+`new s: Session` row to the second table with the logged `clock.now`; the failure case
+trips that same guard, so `NotFound` leaves the state unchanged and writes no row.
+
+**Deferred: a case for a `todo`-domain program.** Every program in the todo domain
+carries `status: Status` where `type Status = Open | Done(at: Instant);`, and the
+provisional schema defines no encoding for a sum-type value:
+`$defs/value` (`packages/tessera-interp/schema/semantics-case.schema.json:80`) admits
+an integer, number, boolean, string, id literal, record and array — a closed list —
+and `$defs/recordValue` (`:92`) keeps the `type`-tagged shape reserved for an id
+literal, so a `Done(at)` value can be written as neither a record nor anything else. A
+todo case would therefore have to invent a variant encoding, which the corpus forbids
+(`No invented syntax`, above) and CLAUDE.md's "The spec is not guessed" forbids.
+
+So this is not a missing file; it is a question the frozen schema does not answer.
+Encoding a tagged union in `$defs/value` is a change to a frozen M0 interface, which
+spec §13 requires to arrive as a versioned proposal with a green differential test —
+not as a corpus edit here. The follow-up is a `spec:ambiguity` issue,
+`spec(§3): how does a semantics case encode a sum-type value such as Done(at)?`
+(`/spec-issue`); this corpus takes no reading until it lands, so the todo-domain case
+pair arrives with that decision. Auth-domain cases need no such decision: every field
+of `User` and `Session` is a `Text`, an `Instant` or an `Id<T>`, all of which the
+schema already represents.

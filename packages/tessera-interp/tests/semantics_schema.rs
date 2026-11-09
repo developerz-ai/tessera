@@ -51,11 +51,19 @@ fn corpus_dir() -> Result<PathBuf, String> {
         .ok_or_else(|| "crate is two levels below the repo root".to_owned())
 }
 
-/// The three worked cases. Exactly these three files exist under `corpus/semantics/`.
-const CASES: [&str; 3] = [
+/// The worked cases. Exactly these files, and no others, exist under
+/// `corpus/semantics/`.
+///
+/// This list is the one place the corpus count lives: adding a case means adding
+/// its name here, and every other mention of the number (this file's messages,
+/// the contract, the corpus READMEs) is written without one, so a new case
+/// cannot leave three copies of a stale count behind.
+const CASES: [&str; 5] = [
     "successful-commit.json",
     "failed-call.json",
     "nondeterministic-inputs.json",
+    "auth-login-success.json",
+    "auth-login-failure.json",
 ];
 
 /// The raw bytes of a case file, read without parsing. The contract promises
@@ -273,7 +281,7 @@ fn every_worked_case_validates() {
 }
 
 #[test]
-fn corpus_holds_exactly_the_three_worked_cases() {
+fn corpus_holds_exactly_the_worked_cases() {
     let dir = corpus_dir();
     assert!(dir.is_ok(), "corpus/semantics/ must exist");
     let dir = dir.unwrap_or_default();
@@ -296,7 +304,7 @@ fn corpus_holds_exactly_the_three_worked_cases() {
     expected.sort();
     assert_eq!(
         found, expected,
-        "corpus/semantics/ holds exactly the three worked cases"
+        "corpus/semantics/ holds exactly the worked cases listed in `CASES`"
     );
 }
 
@@ -375,7 +383,7 @@ fn a_whitespace_only_difference_is_not_byte_identity() {
     );
 }
 
-// --- the three cases collectively cover the contract --------------------
+// --- the cases collectively cover the contract --------------------------
 
 #[test]
 fn the_cases_cover_ok_failed_and_every_input_kind() {

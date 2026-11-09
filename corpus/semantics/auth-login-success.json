@@ -1,0 +1,55 @@
+{
+  "module": "auth_login",
+  "initial_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "password": "hunter2"
+        }
+      ],
+      "sessions": []
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "login",
+      "args": [
+        { "id": 1, "type": "Id<User>" },
+        "hunter2"
+      ],
+      "inputs": [
+        {
+          "kind": "clock",
+          "capability": "clock",
+          "reading": "now",
+          "value": "2026-10-22T09:15:00Z"
+        }
+      ],
+      "result": {
+        "ok": "hunter2"
+      }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "password": "hunter2"
+        }
+      ],
+      "sessions": [
+        {
+          "user": { "id": 1, "type": "Id<User>" },
+          "token": "hunter2",
+          "opened": "2026-10-22T09:15:00Z"
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

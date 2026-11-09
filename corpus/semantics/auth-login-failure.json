@@ -1,0 +1,42 @@
+{
+  "module": "auth_login",
+  "initial_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "password": "hunter2"
+        }
+      ],
+      "sessions": []
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "login",
+      "args": [
+        { "id": 1, "type": "Id<User>" },
+        "wrong-guess"
+      ],
+      "inputs": [],
+      "result": {
+        "failed": "NotFound"
+      }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "password": "hunter2"
+        }
+      ],
+      "sessions": []
+    }
+  },
+  "expected_outputs": []
+}
