@@ -296,7 +296,7 @@ fn one_module_and_one_readme_per_program() -> Result<(), String> {
 }
 
 /// Every `example ... fails <Name>` names a failure its rule can reach, and no
-/// guard that fails earlier on the empty store shadows it.
+/// earlier `or fail` site — a lookup miss or a `require` guard — shadows it.
 #[test]
 fn every_declared_failure_is_reachable() -> Result<(), String> {
     let mut checked = 0;
@@ -317,10 +317,10 @@ fn every_declared_failure_is_reachable() -> Result<(), String> {
                 program.name
             );
             let at = first.unwrap_or_default();
-            let guard = described_guard(&body[..at]);
+            let earlier = earlier_failure_site(&body[..at]);
             assert!(
-                !preceded_by_earlier_guard_failure(&body[..at]),
-                "corpus/programs/{0}/: example on line {line} declares `fails {failure}`, but rule `{rule}` runs a guard that fails on the empty store before the `{site}` — the declared failure can never be the one a caller sees: {guard}",
+                earlier.is_none(),
+                "corpus/programs/{0}/: example on line {line} declares `fails {failure}`, but rule `{rule}` reaches an earlier `or fail` on the empty store before the `{site}` — the declared failure can never be the one a caller sees: {earlier:?}",
                 program.name
             );
             checked += 1;
@@ -333,22 +333,44 @@ fn every_declared_failure_is_reachable() -> Result<(), String> {
     Ok(())
 }
 
-/// Whether `before` — the part of a rule body ahead of a `or fail <Name>` —
-/// already contains a `require … or fail` guard. On the empty store every table
-/// read misses, so such a guard fires before the later failure is reached.
-fn preceded_by_earlier_guard_failure(before: &str) -> bool {
+/// The first `or fail` site ahead of `before` — the part of a rule body before a
+/// declared `or fail <Name>` — that shadows it: a `let x = <table>[<key>] or fail
+/// …;` miss or a `require … or fail …;` guard. On the empty store every table
+/// read misses, so any earlier `or fail` aborts before the declared failure is
+/// reached and that failure can never be the one a caller sees. Comments are
+/// stripped: a comment mentioning `or fail` is not a site.
+fn earlier_failure_site(before: &str) -> Option<String> {
     before
         .lines()
-        .any(|line| line.trim_start().starts_with("require ") && line.contains("or fail "))
+        .map(strip_comment)
+        .find(|line| line.contains("or fail "))
+        .map(|line| line.trim().to_owned())
 }
 
-/// The first guard that shadows a later failure, for the assertion message.
-fn described_guard(before: &str) -> String {
-    before
-        .lines()
-        .find(|line| line.trim_start().starts_with("require ") && line.contains("or fail "))
-        .map(|line| line.trim().to_owned())
-        .unwrap_or_default()
+/// A lookup miss shadows a later failure just as a `require` guard does — the
+/// defect class this check exists for (`corpus/programs/README.md`).
+#[test]
+fn an_earlier_lookup_miss_shadows_a_later_failure() {
+    let lookup_first =
+        "let t = tasks[id] or fail NotFound;\n  require t.owner == by or fail Forbidden;\n";
+    assert_eq!(
+        earlier_failure_site(lookup_first).as_deref(),
+        Some("let t = tasks[id] or fail NotFound;"),
+        "a `let … or fail` ahead of a `require … or fail` must count as an earlier failure site"
+    );
+
+    let guard_first = "require users[by].permission == \"admin\" or fail Forbidden;\n  let t = tasks[id] or fail NotFound;\n";
+    assert_eq!(
+        earlier_failure_site(guard_first).as_deref(),
+        Some("require users[by].permission == \"admin\" or fail Forbidden;")
+    );
+
+    // A comment mentioning a failure is not a site, and an empty body has none.
+    assert_eq!(
+        earlier_failure_site("// or fail NotFound is not reached\n"),
+        None
+    );
+    assert_eq!(earlier_failure_site(""), None);
 }
 
 /// The `#5`, `#7`, `#9` and `#10` rows match what the module actually uses.

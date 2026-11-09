@@ -20,7 +20,7 @@ rule login(who: Id<User>, attempt: Text) needs clock, rng {
   return s.token;
 }
 
-law one_session_per_user: forall s1 in sessions. forall s2 in sessions. (s1.user == s2.user) => (s1.token == s2.token);
+law session_belongs_to_a_user: forall s in sessions. (s.user in users);
 
 example login(bob, wrong_password) fails NotFound;
 example login(missing_user, wrong_password) fails NotFound;

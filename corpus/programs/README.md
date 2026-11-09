@@ -75,12 +75,14 @@ on the empty store. Where reading a table is the point, bind the lookup first �
 `let x = <table>[<key>] or fail NotFound;` (`docs/spec/v0.1.md:638`) — then use
 `x` in the `new` constraints.
 
-The order matters as much as the presence: a guard that precedes the lookup
-fails on the empty store before the lookup is reached. A rule that runs
-`require users[by].permission == … or fail Forbidden;` above
-`let t = tasks[id] or fail NotFound;` can never produce the `NotFound` its own
-example declares, so the table reads come first and the guards that depend on
-them follow.
+The order matters as much as the presence: any earlier `or fail` aborts before
+the declared site is reached, and on the empty store a table read misses. So
+`let t = tasks[id] or fail NotFound;` above a `require … or fail Forbidden;`
+means the rule can never produce the `Forbidden` its own example declares — the
+lookup fires first. A guard that reads a table directly
+(`require users[by].permission == … or fail Forbidden;`) has the same effect
+above a later lookup. So the table reads come first and the guards that depend
+on them follow.
 
 `packages/tessera-interp/tests/corpus_programs.rs` enforces this invariant
 together with the one-`.tes`-plus-one-README layout, the anchor rows and the

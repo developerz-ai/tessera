@@ -22,10 +22,21 @@ field `Session` declares (`user`, `token`, `opened`), leaving no derived field
 undetermined. `clock` and `rng` are both declared in the rule's `needs` clause,
 so the module reads no ambient effect (§1 P3).
 
-`law one_session_per_user` states the invariant its name promises: for any two
-sessions of the same user, the tokens are equal — i.e. at most one distinct token
-per user. Ordering two distinct tokens (the shape a `s1.token <= s2.token`
-conclusion would express) is not uniqueness, so the law does not state it.
+`law session_belongs_to_a_user` states an invariant `login` actually preserves:
+every session row names a user the `users` table holds. The rule reads
+`users[who] or fail NotFound;` before it creates the row and constrains
+`s.user == u.id`, so a committed `login` can only insert a session for a stored
+user, and it writes no other table.
+
+It deliberately does not state "one session per user": `sessions` is keyed by
+`token` (`:7`) and v0.1 addresses a `Table<T>` row only through its declared
+key, whose write forms are place assignments that commit at once
+(`docs/spec/v0.1.md:471`, `docs/spec/v0.1.md:641`) — no statement of the rule
+body enumerates or removes a row. So `login` cannot see, replace or remove the
+caller's earlier session: a second `login` by `bob` leaves two rows, each with
+the `rng.token(32)` it was issued (`docs/spec/v0.1.md:640`), and a law
+`one_session_per_user` would be falsified by this rule on its own second call —
+so the module states only what the rule preserves.
 
 ## Issue anchors
 
