@@ -1,0 +1,39 @@
+{
+  "module": "auth_owner_check",
+  "initial_state": {
+    "tables": {
+      "records": [
+        {
+          "id": { "id": 12, "type": "Id<Record>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "update",
+      "args": [
+        { "id": 12, "type": "Id<Record>" },
+        { "id": 2, "type": "Id<User>" }
+      ],
+      "result": { "failed": "NotFound" }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "records": [
+        {
+          "id": { "id": 12, "type": "Id<Record>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

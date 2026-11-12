@@ -1,0 +1,18 @@
+module todo_unless @1;
+
+// unless suffix on an assignment statement.
+type Task = { id: Id<Task>, active: Bool, count: Int, total: Int };
+
+state tasks: Table<Task> key id;
+
+rule flag(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].active = true unless t.active == true;
+  tasks[id].total = t.total + 1;
+}
+
+law counts_below_total: forall t in tasks. t.count <= t.total;
+
+fixture task_12: Id<Task> = #12 : Id<Task>;
+
+example flag(task_12) fails NotFound;

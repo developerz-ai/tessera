@@ -1,0 +1,14 @@
+module auth_session_expiry @1;
+// an expiry guard: a session past its expiry day is refused
+type User = { id: Id<User> };
+type Session = { id: Id<Session>, user: Id<User>, expires_day: Int, count: Int, total: Int };
+state sessions: Table<Session> key id;
+rule redeem(id: Id<Session>, day: Int) {
+  let s = sessions[id] or fail NotFound;
+  require day <= s.expires_day or fail Expired;
+  sessions[id].total = s.total + 1;
+}
+law session_counts: forall s in sessions. s.count <= s.total;
+fixture session_7: Id<Session> = #7 : Id<Session>;
+fixture day_30: Int = 30;
+example redeem(session_7, day_30) fails NotFound;

@@ -13,6 +13,10 @@
 //! fail is not a test (`.claude/agents/test-author.md`), so each negative case
 //! here breaks exactly one rule and asserts the violation is caught.
 //!
+//! `corpus/semantics/` holds the three worked cases the contract walks
+//! through, beside one case per M0 program. The suite enumerates that
+//! directory, so a program case joins the corpus without a change here.
+//!
 //! The workspace lints deny `unwrap`/`expect`/`panic!` even in test targets,
 //! so the helpers below return `Result` and the tests report through
 //! `assert!`.
@@ -42,17 +46,31 @@ fn schema_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("schema/semantics-case.schema.json")
 }
 
-/// `corpus/semantics/`, found from the crate manifest directory.
-fn corpus_dir() -> Result<PathBuf, String> {
+/// The repository root, found from the crate manifest directory: the crate
+/// sits two levels below it.
+fn repo_root() -> Result<PathBuf, String> {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
-        .map(|root| root.join("corpus/semantics"))
+        .map(Path::to_path_buf)
         .ok_or_else(|| "crate is two levels below the repo root".to_owned())
 }
 
-/// The three worked cases. Exactly these three files exist under `corpus/semantics/`.
-const CASES: [&str; 3] = [
+/// `corpus/semantics/`, found from the crate manifest directory.
+fn corpus_dir() -> Result<PathBuf, String> {
+    Ok(repo_root()?.join("corpus/semantics"))
+}
+
+/// `corpus/programs/`, found from the crate manifest directory.
+fn programs_dir() -> Result<PathBuf, String> {
+    Ok(repo_root()?.join("corpus/programs"))
+}
+
+/// The three worked cases: the exemplars the contract walks through. They sit
+/// in `corpus/semantics/` beside one case per M0 program, and the suite holds
+/// every file in that directory to the same contract. The corpus itself is
+/// enumerated from the directory, never listed here.
+const WORKED_CASES: [&str; 3] = [
     "successful-commit.json",
     "failed-call.json",
     "nondeterministic-inputs.json",
@@ -189,11 +207,60 @@ fn parse_digits(bytes: &[u8]) -> Option<u32> {
     text.parse::<u32>().ok()
 }
 
+/// The case files under `corpus/semantics/`, sorted by name.
+///
+/// The sort is what makes the suite deterministic: the order a filesystem
+/// hands out directory entries is not stable, and the corpus is the ground
+/// truth for every backend (spec §1, P1).
+fn corpus_case_files(dir: &Path) -> Result<Vec<String>, String> {
+    let entries = fs::read_dir(dir).map_err(|e| format!("cannot read {}: {e}", dir.display()))?;
+    let mut found: Vec<String> = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("cannot read an entry of {}: {e}", dir.display()))?;
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if Path::new(&name)
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+        {
+            found.push(name);
+        }
+    }
+    found.sort();
+    Ok(found)
+}
+
+/// The module a program declares, read from its first line.
+///
+/// The corpus convention is one program per directory, one case per program,
+/// and the module name is the directory name written in underscores
+/// (`corpus/programs/README.md`). The suite reads the declaration rather than
+/// deriving the name, so a program that renames its module without its case
+/// is caught here.
+fn declared_module(path: &Path) -> Result<String, String> {
+    let text =
+        fs::read_to_string(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
+    let first = text
+        .lines()
+        .next()
+        .ok_or_else(|| format!("{} is empty", path.display()))?;
+    let name = first
+        .strip_prefix("module ")
+        .and_then(|rest| rest.split_whitespace().next())
+        .ok_or_else(|| format!("{} declares no module on its first line", path.display()))?;
+    Ok(name.to_owned())
+}
+
 /// A case is accepted only when it validates against the schema *and* satisfies
 /// the rules the schema cannot express: the ordering rule and the calendar of
 /// a clock reading.
 fn check(case: &Value) -> Result<(), String> {
     let validator = schema()?;
+    check_with(&validator, case)
+}
+
+/// The same verdict as [`check`], against an already compiled schema: a suite
+/// that reads the whole corpus compiles the schema once.
+fn check_with(validator: &Validator, case: &Value) -> Result<(), String> {
     let mut msg = String::new();
     for e in validator.iter_errors(case) {
         let _ = writeln!(msg, "{}: {e}", e.instance_path());
@@ -251,12 +318,15 @@ fn mutate(case: &Value, path: &[&str], replacement: Value) -> Result<Value, Stri
 
 // --- the worked cases ---------------------------------------------------
 
+/// The three worked cases — the exemplars the contract walks through — satisfy
+/// the contract. The corpus as a whole is covered by
+/// [`every_corpus_case_validates`].
 #[test]
 fn every_worked_case_validates() {
     let dir = corpus_dir();
     assert!(dir.is_ok(), "corpus/semantics/ must exist");
     let dir = dir.unwrap_or_default();
-    for name in CASES {
+    for name in WORKED_CASES {
         let case = read_case(&dir, name);
         assert!(case.is_ok(), "worked case {name} must be readable");
         let case = case.unwrap_or_default();
@@ -272,37 +342,57 @@ fn every_worked_case_validates() {
     }
 }
 
+// --- the whole corpus ---------------------------------------------------
+
+/// The whole corpus conforms: the three worked cases are present, and every
+/// case file under `corpus/semantics/` — the worked cases plus one case per
+/// M0 program — validates against the schema and against the rules the schema
+/// cannot express (the call order, and the calendar of a clock reading).
 #[test]
-fn corpus_holds_exactly_the_three_worked_cases() {
+fn every_corpus_case_validates() {
     let dir = corpus_dir();
     assert!(dir.is_ok(), "corpus/semantics/ must exist");
     let dir = dir.unwrap_or_default();
-    let entries = fs::read_dir(&dir);
-    assert!(entries.is_ok(), "corpus/semantics/ must be readable");
-    let mut found: Vec<String> = match entries {
-        Ok(it) => it
-            .filter_map(Result::ok)
-            .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| {
-                Path::new(n)
-                    .extension()
-                    .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
-            })
-            .collect(),
-        Err(_) => Vec::new(),
+
+    let files = corpus_case_files(&dir);
+    assert!(files.is_ok(), "corpus/semantics/ must be readable");
+    let files = files.unwrap_or_default();
+
+    // The worked cases are part of the corpus, not beside it: the contract
+    // walks through them, so they must stay where the suite reads them.
+    for name in WORKED_CASES {
+        assert!(
+            files.iter().any(|f| f.as_str() == name),
+            "corpus/semantics/ must hold the worked case {name}"
+        );
+    }
+
+    let validator = schema();
+    assert!(validator.is_ok(), "the schema must compile");
+    let Ok(validator) = validator else {
+        return;
     };
-    found.sort();
-    let mut expected: Vec<String> = CASES.iter().map(|s| (*s).to_owned()).collect();
-    expected.sort();
-    assert_eq!(
-        found, expected,
-        "corpus/semantics/ holds exactly the three worked cases"
-    );
+
+    for name in &files {
+        let case = read_case(&dir, name);
+        assert!(case.is_ok(), "case {name} must be readable");
+        let case = case.unwrap_or_default();
+        let verdict = check_with(&validator, &case);
+        let reason = match verdict {
+            Ok(()) => String::new(),
+            Err(e) => e,
+        };
+        assert!(
+            reason.is_empty(),
+            "case {name} must satisfy the contract, but: {reason}"
+        );
+    }
 }
 
 /// The corpus is the ground truth for every backend, so the same case must
 /// validate identically on a second read: no map iteration, no clock, no
-/// randomness reaches the result (spec §1, P1).
+/// randomness reaches the result (spec §1, P1). The guarantee is a property of
+/// the corpus, so every case in it is checked, not only the worked ones.
 #[test]
 fn validation_is_deterministic() {
     let dir = corpus_dir();
@@ -313,9 +403,11 @@ fn validation_is_deterministic() {
     let Ok(validator) = validator else {
         return;
     };
-    for name in CASES {
-        let first = read_case_bytes(&dir, name);
-        let second = read_case_bytes(&dir, name);
+    let files = corpus_case_files(&dir);
+    assert!(files.is_ok(), "corpus/semantics/ must be readable");
+    for name in files.unwrap_or_default() {
+        let first = read_case_bytes(&dir, &name);
+        let second = read_case_bytes(&dir, &name);
         assert!(
             first.is_ok() && second.is_ok(),
             "case {name} must be readable"
@@ -329,8 +421,8 @@ fn validation_is_deterministic() {
             identical_bytes(&first, &second),
             "case {name} must read back as identical bytes"
         );
-        let first = parse_case(&first, name);
-        let second = parse_case(&second, name);
+        let first = parse_case(&first, &name);
+        let second = parse_case(&second, &name);
         assert!(
             first.is_ok() && second.is_ok(),
             "case {name} must parse as JSON"
@@ -344,6 +436,107 @@ fn validation_is_deterministic() {
             "case {name} must validate identically twice"
         );
     }
+}
+
+/// A corpus case runs against the program it sits beside: the case names the
+/// module the program declares, and the program declares the module its
+/// directory name spells. The three worked cases run against a module of their
+/// own and have no program in the corpus, so the rule binds the program cases.
+#[test]
+fn every_corpus_case_names_the_module_of_its_program() {
+    let dir = corpus_dir();
+    assert!(dir.is_ok(), "corpus/semantics/ must exist");
+    let dir = dir.unwrap_or_default();
+    let programs = programs_dir();
+    assert!(programs.is_ok(), "corpus/programs/ must exist");
+    let programs = programs.unwrap_or_default();
+
+    let files = corpus_case_files(&dir);
+    assert!(files.is_ok(), "corpus/semantics/ must be readable");
+    for name in files.unwrap_or_default() {
+        let Some(stem) = name.strip_suffix(".json") else {
+            continue;
+        };
+        if WORKED_CASES.contains(&name.as_str()) {
+            // A worked case has no program: it runs against a module of its
+            // own.
+            continue;
+        }
+        let program = programs.join(stem).join(format!("{stem}.tes"));
+        assert!(
+            program.is_file(),
+            "case {name} must sit beside its program {}",
+            program.display()
+        );
+        let declared = declared_module(&program);
+        assert!(
+            declared.is_ok(),
+            "{} must declare a module on its first line",
+            program.display()
+        );
+        let declared = declared.unwrap_or_default();
+        assert_eq!(
+            declared,
+            stem.replace('-', "_"),
+            "the module {} declares must be its directory name in underscores",
+            program.display()
+        );
+        let case = read_case(&dir, &name);
+        assert!(case.is_ok(), "case {name} must be readable");
+        let case = case.unwrap_or_default();
+        let named = case["module"].as_str().unwrap_or_default();
+        assert_eq!(
+            named,
+            declared,
+            "case {name} must name the module {} declares",
+            program.display()
+        );
+    }
+}
+
+/// Every program has exactly one case: the corpus covers the programs it
+/// ships, one to one (`corpus/programs/README.md`). The rule also keeps the
+/// checks above from passing on a directory listing that missed the program
+/// cases.
+#[test]
+fn every_program_has_exactly_one_case() {
+    let programs = programs_dir();
+    assert!(programs.is_ok(), "corpus/programs/ must exist");
+    let programs = programs.unwrap_or_default();
+    let dir = corpus_dir();
+    assert!(dir.is_ok(), "corpus/semantics/ must exist");
+    let dir = dir.unwrap_or_default();
+    let files = corpus_case_files(&dir);
+    assert!(files.is_ok(), "corpus/semantics/ must be readable");
+    let files = files.unwrap_or_default();
+
+    let entries = fs::read_dir(&programs)
+        .map(|read| read.flatten().collect::<Vec<_>>())
+        .unwrap_or_default();
+    let mut program_count = 0;
+    for entry in entries {
+        if !entry.path().is_dir() {
+            continue;
+        }
+        let name = entry.file_name().to_string_lossy().into_owned();
+        assert!(
+            entry.path().join(format!("{name}.tes")).is_file(),
+            "program dir {name} must hold {name}/{name}.tes"
+        );
+        let cases = files
+            .iter()
+            .filter(|f| f.strip_suffix(".json") == Some(name.as_str()))
+            .count();
+        assert_eq!(
+            cases, 1,
+            "program {name} must have exactly one case in corpus/semantics/"
+        );
+        program_count += 1;
+    }
+    assert_eq!(
+        program_count, 20,
+        "corpus/programs/ must hold exactly 20 programs"
+    );
 }
 
 /// The determinism guarantee is stated in bytes: a case that differs only in
@@ -748,17 +941,30 @@ fn a_malformed_tagged_id_is_rejected() {
         "a well-formed tagged id must be accepted"
     );
 
-    // A record whose `type` field is not an id ascription is a record.
-    let record = mutate(
-        &case,
-        &["calls", "0", "args", "0"],
-        json!({ "id": 7, "type": "User" }),
-    );
+    // A record that carries no `type` field is a record, and is accepted:
+    // `type` is a reserved word (spec §2), so no program declares such a
+    // field and a record never holds one.
+    let record = mutate(&case, &["calls", "0", "args", "0"], json!({ "id": 7 }));
     assert!(record.is_ok(), "the mutation must apply");
     let record = record.unwrap_or_default();
     assert!(
         check(&record).is_ok(),
-        "a record whose `type` field is not an id ascription must be accepted"
+        "a record without a `type` field must be accepted"
+    );
+
+    // A tagged id whose `type` is not an `Id<T>` ascription is not an id
+    // literal, and it is not a record either: the two representations are
+    // disjoint, so the malformed literal matches neither and is rejected
+    // instead of slipping through as a record.
+    let malformed = mutate(
+        &case,
+        &["calls", "0", "args", "0"],
+        json!({ "id": 7, "type": "User" }),
+    );
+    assert!(malformed.is_ok(), "the mutation must apply");
+    assert_rejected(
+        &malformed.unwrap_or_default(),
+        "a tagged id whose `type` is not an `Id<T>` ascription",
     );
 
     // A negative id number.

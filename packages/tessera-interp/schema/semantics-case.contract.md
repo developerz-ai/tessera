@@ -82,9 +82,11 @@ closed, deterministic literals of spec §2–§3, so a row is JSON-representable
 and replays identically. An id literal is the tagged object
 `{ "id": 12, "type": "Id<Task>" }`, so an id is distinguishable from a `Text`
 that happens to look like a number. The two representations are disjoint: an
-id literal carries an `Id<T>` ascription and nothing else, and a record never
-carries a `type` field holding one — so a malformed id literal cannot pass as
-a record.
+id literal carries an `Id<T>` ascription and nothing else, and a record carries
+no `type` field at all — `type` is a reserved word (spec §2), so no program
+can declare such a field and rejecting one cannot reject a legal program.
+Neither a well-formed id literal nor a malformed one — one whose `type` is not
+an `Id<T>` ascription — passes as a record.
 
 A case never names a table that the module does not declare, and never carries
 a field the module does not declare in that table. Both are checked by the
@@ -214,7 +216,10 @@ that ships with this contract. It:
 
 1. validates every worked case against the schema and against the ordering
    rule;
-2. asserts that `corpus/semantics/` holds exactly the three worked cases;
+2. validates every case file under `corpus/semantics/` — the three worked
+   cases plus the M0 program cases — against the schema and against the
+   ordering and calendar rules, and asserts that the three worked cases are
+   still part of the corpus;
 3. asserts that reading a case twice yields identical bytes and an identical
    verdict;
 4. asserts that the three cases collectively cover an `Ok(v)` result, a
@@ -239,6 +244,13 @@ cargo test -p tessera-interp --test semantics_schema
 | [`successful-commit.json`](../../../corpus/semantics/successful-commit.json) | Seeded initial state, one ordered call, a logged clock reading, an `Ok(v)` result, the committed final state and one delivered output. |
 | [`failed-call.json`](../../../corpus/semantics/failed-call.json) | A `Failed(Name)` result: the state is unchanged, the buffered output is discarded, and the inputs consumed by the aborted call stay in the log. |
 | [`nondeterministic-inputs.json`](../../../corpus/semantics/nondeterministic-inputs.json) | Two ordered calls consuming logged `clock`, `random` and `id` inputs, with the deterministic expected state and the ordered expected outputs. |
+
+The M0 program cases in `corpus/semantics/` — one `<program>.json` per program
+under `corpus/programs/` — follow this format unchanged: the same fields, the
+same schema and the same rules, with no variant of the format for program
+cases. They are corpus cases rather than worked cases, so the table above does
+not list them; the conformance suite validates every one of them exactly like
+the three worked cases.
 
 ## What this contract does not decide
 

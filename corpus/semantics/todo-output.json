@@ -1,0 +1,41 @@
+{
+  "module": "todo_output",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "note",
+      "args": [
+        { "id": 12, "type": "Id<Task>" }
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "count": 3,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "expected_outputs": [
+    {
+      "stream": "ledger",
+      "value": "noted"
+    }
+  ]
+}

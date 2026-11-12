@@ -1,0 +1,20 @@
+module todo_literals @1;
+// one fixture per literal form
+type Task = { id: Id<Task>, title: Text, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule note(id: Id<Task>, title: Text) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].title = title;
+  tasks[id].total = t.total + 1;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+fixture n: Int = 42;
+fixture price: Decimal(2) = 19.99;
+fixture label: Text = "ship it";
+fixture flag: Bool = true;
+fixture due: Date = 2026-10-22;
+fixture grace: Duration = 7d;
+fixture total_hint: Int = n;
+fixture headline: Text = label;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+example note(task_12, headline) fails NotFound;

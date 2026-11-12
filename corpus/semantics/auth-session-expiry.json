@@ -1,0 +1,41 @@
+{
+  "module": "auth_session_expiry",
+  "initial_state": {
+    "tables": {
+      "sessions": [
+        {
+          "id": { "id": 7, "type": "Id<Session>" },
+          "user": { "id": 1, "type": "Id<User>" },
+          "expires_day": 30,
+          "count": 0,
+          "total": 1
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "redeem",
+      "args": [
+        { "id": 7, "type": "Id<Session>" },
+        30
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "sessions": [
+        {
+          "id": { "id": 7, "type": "Id<Session>" },
+          "user": { "id": 1, "type": "Id<User>" },
+          "expires_day": 30,
+          "count": 0,
+          "total": 2
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

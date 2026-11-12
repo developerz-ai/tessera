@@ -1,0 +1,20 @@
+module todo_keyword_names @1;
+
+// Contextual words as field names (issue #5).
+type Task = { id: Id<Task>, key: Text, index: Int, count: Int, total: Int };
+
+state tasks: Table<Task> key id;
+
+rule rename(id: Id<Task>, label: Text) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].key = label;
+  tasks[id].index = t.index + 1;
+  tasks[id].total = t.total + 1;
+}
+
+law counts_below_total: forall t in tasks. t.count <= t.total;
+
+fixture task_12: Id<Task> = #12 : Id<Task>;
+fixture label: Text = "renamed";
+
+example rename(task_12, label) fails NotFound;

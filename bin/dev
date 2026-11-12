@@ -2,4 +2,39 @@
 # one-command dev — established by dz-runner setup mode. One command; adjust as the repo grows.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Use the Rust pinned in rust-toolchain.toml, not whatever answers on PATH: a shim
+# earlier on PATH (mise, asdf, …) can pin another Rust, and RUSTUP_TOOLCHAIN in
+# the environment overrides rust-toolchain.toml itself. Same selection as bin/setup.
+pinned=""
+if [[ -f rust-toolchain.toml ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" =~ ^[[:space:]]*channel[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+      pinned="${BASH_REMATCH[1]}"
+    fi
+  done < rust-toolchain.toml
+fi
+if [[ -n "$pinned" ]]; then
+  command -v rustup >/dev/null || {
+    printf 'rustup not found — install from https://rustup.rs\n' >&2
+    exit 75
+  }
+  pinned_rustc="$(rustup which --toolchain "$pinned" rustc 2>/dev/null || true)"
+  if [[ -z "$pinned_rustc" ]]; then
+    printf 'toolchain %s is not installed — run bin/setup\n' "$pinned" >&2
+    exit 75
+  fi
+  export PATH="$(dirname "$pinned_rustc"):$PATH"
+  rustc_version="$(rustc --version)"
+  pinned_version="${pinned%%-*}"
+  case "$pinned_version" in
+    [0-9]*)
+      if [[ "$rustc_version" != "rustc $pinned_version"* ]]; then
+        printf 'rustc answers %s, but rust-toolchain.toml pins %s\n' "$rustc_version" "$pinned" >&2
+        exit 75
+      fi
+      ;;
+  esac
+  printf '  toolchain %s\n' "$rustc_version"
+fi
+
 cargo run -q -p tessera -- help

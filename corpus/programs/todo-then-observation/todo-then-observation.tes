@@ -1,0 +1,11 @@
+module todo_then_observation @1;
+// example observation: a then observation is carried, the outcome is the failure
+type Task = { id: Id<Task>, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule bump(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].total = t.total + 1;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+example bump(task_12) then count(tasks) fails NotFound;

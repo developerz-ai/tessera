@@ -1,0 +1,38 @@
+{
+  "module": "todo_decrement",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "done": 2,
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "drop",
+      "args": [
+        { "id": 12, "type": "Id<Task>" }
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "done": 1,
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

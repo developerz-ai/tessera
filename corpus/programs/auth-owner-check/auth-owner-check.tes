@@ -1,0 +1,14 @@
+module auth_owner_check @1;
+// an ownership guard: only the owner may update a record
+type User = { id: Id<User> };
+type Record = { id: Id<Record>, owner: Id<User>, count: Int, total: Int };
+state records: Table<Record> key id;
+rule update(id: Id<Record>, by: Id<User>) {
+  let r = records[id] or fail NotFound;
+  require r.owner == by or fail NotFound;
+  records[id].total = r.total + 1;
+}
+law record_counts: forall r in records. r.count <= r.total;
+fixture record_12: Id<Record> = #12 : Id<Record>;
+fixture user_1: Id<User> = #1 : Id<User>;
+example update(record_12, user_1) fails NotFound;
