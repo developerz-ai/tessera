@@ -36,7 +36,7 @@ serde_json = "1"
 # Reuse rule (spec §13): a validator is not something to hand-write. Default
 # features are off — the case schema is self-contained, so remote/file `$ref`
 # resolution and the TLS stack are not needed.
-jsonschema = { version = "0.60", default-features = false }
+jsonschema = { version = "0.61", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

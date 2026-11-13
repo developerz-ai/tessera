@@ -1,0 +1,57 @@
+{
+  "module": "auth_login",
+  "initial_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "count": 0,
+          "total": 0
+        }
+      ],
+      "sessions": [
+        {
+          "id": { "id": 7, "type": "Id<Session>" },
+          "user": { "id": 1, "type": "Id<User>" },
+          "token": "tok-0",
+          "count": 0,
+          "total": 1
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "login",
+      "args": [
+        { "id": 1, "type": "Id<User>" },
+        { "id": 7, "type": "Id<Session>" }
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "users": [
+        {
+          "id": { "id": 1, "type": "Id<User>" },
+          "name": "bob",
+          "count": 0,
+          "total": 0
+        }
+      ],
+      "sessions": [
+        {
+          "id": { "id": 7, "type": "Id<Session>" },
+          "user": { "id": 1, "type": "Id<User>" },
+          "token": "tok-1",
+          "count": 0,
+          "total": 2
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

@@ -1,0 +1,37 @@
+{
+  "module": "todo_prove_idempotent",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "set_total",
+      "args": [
+        { "id": 12, "type": "Id<Task>" },
+        5
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

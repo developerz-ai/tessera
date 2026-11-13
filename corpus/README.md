@@ -5,9 +5,12 @@ Ground truth, written **before** implementation (spec §13). M0 gate: 20 example
 | Path | Holds | Consumed by |
 |---|---|---|
 | `programs/<name>/*.tes` | complete example programs with `law` and `example` declarations; every example input is a `fixture` declaration (spec §4) whose value is a closed literal (spec §2–§3) or a reference to another fixture of the same module, and whose declared type matches the type of that value | parser round-trip (A), type checker (B), interpreter (C), parity (G, H) |
+| `programs/README.md` | the M0 program index: the 20 programs, their semantics cases, and the spec readings the corpus adopts | maintainers (veto), reviewers |
 | `negative/<code>/*.tes` | programs that MUST fail with diagnostic `<code>` | WP B's 200 negative tests |
 | `semantics/*.json` | semantics cases: initial state, call sequence, expected state and outputs — the only place seeded state lives | interpreter (C), every backend |
 | `seeded-bugs/*.tes` | rules with a known law violation | verifier (D): must be refuted, never proven |
+
+The 20 example programs, their per-program semantics cases and the seven issue-resolution links live in [`programs/README.md`](programs/README.md).
 
 Rules:
 

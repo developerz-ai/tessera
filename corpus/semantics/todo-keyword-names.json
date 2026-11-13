@@ -1,0 +1,44 @@
+{
+  "module": "todo_keyword_names",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "key": "old",
+          "index": 1,
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "rename",
+      "args": [
+        { "id": 12, "type": "Id<Task>" },
+        "renamed"
+      ],
+      "inputs": [],
+      "result": {
+        "ok": true
+      }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "key": "renamed",
+          "index": 2,
+          "count": 3,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

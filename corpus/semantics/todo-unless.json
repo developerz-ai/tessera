@@ -1,0 +1,38 @@
+{
+  "module": "todo_unless",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "active": false,
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "flag",
+      "args": [
+        { "id": 12, "type": "Id<Task>" }
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "active": true,
+          "count": 3,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

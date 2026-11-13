@@ -1,0 +1,18 @@
+module auth_login @1;
+// two tables, a cross-table write and a token refresh
+type User = { id: Id<User>, name: Text, count: Int, total: Int };
+type Session = { id: Id<Session>, user: Id<User>, token: Text, count: Int, total: Int };
+state users: Table<User> key id;
+state sessions: Table<Session> key id;
+rule login(user_id: Id<User>, session_id: Id<Session>) {
+  let u = users[user_id] or fail NotFound;
+  let s = sessions[session_id] or fail NotFound;
+  sessions[session_id].user = u.id;
+  sessions[session_id].token = "tok-1";
+  sessions[session_id].total = s.total + 1;
+}
+law user_counts: forall u in users. u.count <= u.total;
+law session_counts: forall s in sessions. s.count <= s.total;
+fixture user_1: Id<User> = #1 : Id<User>;
+fixture session_7: Id<Session> = #7 : Id<Session>;
+example login(user_1, session_7) fails NotFound;

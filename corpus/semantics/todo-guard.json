@@ -1,0 +1,39 @@
+{
+  "module": "todo_guard",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "update",
+      "args": [
+        { "id": 12, "type": "Id<Task>" },
+        { "id": 1, "type": "Id<User>" }
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "owner": { "id": 1, "type": "Id<User>" },
+          "count": 3,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

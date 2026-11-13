@@ -1,0 +1,15 @@
+module todo_guard @1;
+// two named failures in one rule, in source order
+type User = { id: Id<User> };
+type Task = { id: Id<Task>, owner: Id<User>, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule update(id: Id<Task>, by: Id<User>) {
+  let t = tasks[id] or fail NotFound;
+  require t.owner == by or fail NotFound;
+  require t.count <= t.total or fail OverLimit;
+  tasks[id].total = t.total + 1;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+fixture owner_1: Id<User> = #1 : Id<User>;
+example update(task_12, owner_1) fails NotFound;

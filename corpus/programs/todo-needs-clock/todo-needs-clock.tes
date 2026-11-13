@@ -1,0 +1,20 @@
+module todo_needs_clock @1;
+
+// needs binding at module level and a rule that requires it.
+needs clock: Clock;
+
+type Task = { id: Id<Task>, finished: Instant, count: Int, total: Int };
+
+state tasks: Table<Task> key id;
+
+rule finish(id: Id<Task>) needs clock {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].finished = clock.now;
+  tasks[id].total = t.total + 1;
+}
+
+law counts_below_total: forall t in tasks. t.count <= t.total;
+
+fixture task_12: Id<Task> = #12 : Id<Task>;
+
+example finish(task_12) fails NotFound;

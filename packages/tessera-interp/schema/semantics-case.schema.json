@@ -90,15 +90,14 @@
       ]
     },
     "recordValue": {
-      "description": "A record value: the structured element a declared output stream carries (`Stream<Entry>`). Its fields are named values, as in a state row. A record never carries a `type` field holding an `Id<T>` ascription: that shape is the id literal, so the two representations are disjoint and a malformed id literal cannot pass as a record.",
+      "description": "A record value: the structured element a declared output stream carries (`Stream<Entry>`). Its fields are named values, as in a state row. A record never carries a `type` field: that shape is the id literal, and `type` is a reserved word (spec §2), so no program declares such a field. The two representations are disjoint and a malformed id literal cannot pass as a record.",
       "type": "object",
       "minProperties": 1,
       "propertyNames": { "$ref": "#/$defs/identifier" },
       "additionalProperties": { "$ref": "#/$defs/value" },
       "not": {
-        "description": "The reserved id-literal shape: a `type` field holding an `Id<T>` ascription marks an id literal, never a record.",
-        "required": ["type"],
-        "properties": { "type": { "$ref": "#/$defs/idTypeName" } }
+        "description": "The reserved id-literal shape: a record carries no `type` field at all, so neither a well-formed id literal nor a malformed one — one whose `type` is not an `Id<T>` ascription — passes as a record.",
+        "required": ["type"]
       }
     },
     "idValue": {

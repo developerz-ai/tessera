@@ -1,0 +1,20 @@
+module todo_output @1;
+
+// declared output stream and an append statement.
+type Task = { id: Id<Task>, count: Int, total: Int };
+
+state tasks: Table<Task> key id;
+
+output ledger: Stream<Text>;
+
+rule note(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].total = t.total + 1;
+  output ledger += "noted";
+}
+
+law counts_below_total: forall t in tasks. t.count <= t.total;
+
+fixture task_12: Id<Task> = #12 : Id<Task>;
+
+example note(task_12) fails NotFound;

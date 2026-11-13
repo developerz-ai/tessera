@@ -1,0 +1,39 @@
+{
+  "module": "todo_literals",
+  "initial_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "title": "none",
+          "count": 3,
+          "total": 5
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "index": 0,
+      "rule": "note",
+      "args": [
+        { "id": 12, "type": "Id<Task>" },
+        "ship it"
+      ],
+      "result": { "ok": true }
+    }
+  ],
+  "expected_state": {
+    "tables": {
+      "tasks": [
+        {
+          "id": { "id": 12, "type": "Id<Task>" },
+          "title": "ship it",
+          "count": 3,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "expected_outputs": []
+}

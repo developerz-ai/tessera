@@ -1,0 +1,12 @@
+module todo_counter @1;
+// increment assignment: place += expr
+type Task = { id: Id<Task>, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule add(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].count += 1;
+  tasks[id].total += 1;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+example add(task_12) fails NotFound;

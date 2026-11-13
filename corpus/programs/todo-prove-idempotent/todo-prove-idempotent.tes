@@ -1,0 +1,13 @@
+module todo_prove_idempotent @1;
+// idempotence goal: a prove declaration carrying the idempotent marker
+type Task = { id: Id<Task>, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule set_total(id: Id<Task>, total: Int) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].total = total;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+prove set_total(id, total) is idempotent;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+fixture five: Int = 5;
+example set_total(task_12, five) fails NotFound;

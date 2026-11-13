@@ -10,8 +10,60 @@ command -v rustup >/dev/null || die "rustup not found — install from https://r
 command -v git >/dev/null || die "git not found"
 command -v jq >/dev/null || echo "!  jq not found — the Claude Code rustfmt hook (.claude/hooks/fmt-rust.sh) will be a no-op"
 
-rustup show active-toolchain >/dev/null   # installs the toolchain pinned in rust-toolchain.toml
-ok "toolchain $(rustc --version)"
+rustup show active-toolchain >/dev/null   # installs the toolchain rustup selects
+
+# The toolchain that answers has to be the pinned one. A shim earlier on PATH
+# (mise, asdf, …) can pin another Rust, and RUSTUP_TOOLCHAIN in the environment
+# overrides rust-toolchain.toml itself, so rustup's own answer is not enough:
+# put the pinned toolchain's bin directory first on PATH, then check the
+# toolchain that answers is that one and dies loudly if it is not.
+pinned=""
+components=""
+if [[ -f rust-toolchain.toml ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" =~ ^[[:space:]]*channel[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+      pinned="${BASH_REMATCH[1]}"
+    elif [[ "$line" =~ ^[[:space:]]*components[[:space:]]*=[[:space:]]*\[([^]]*)\] ]]; then
+      components="${BASH_REMATCH[1]//\"/}"
+      components="${components//,/ }"
+    fi
+  done < rust-toolchain.toml
+fi
+
+pinned_rustc=""
+if [[ -n "$pinned" ]]; then
+  if ! pinned_rustc="$(rustup which --toolchain "$pinned" rustc 2>/dev/null)"; then
+    install_args=(toolchain install "$pinned" --profile minimal)
+    for component in $components; do install_args+=(--component "$component"); done
+    rustup "${install_args[@]}"
+    pinned_rustc="$(rustup which --toolchain "$pinned" rustc)"
+  fi
+  if [[ -n "$components" ]]; then
+    add_args=()
+    for component in $components; do add_args+=("$component"); done
+    rustup component add --toolchain "$pinned" "${add_args[@]}"
+  fi
+  export PATH="$(dirname "$pinned_rustc"):$PATH"
+fi
+
+rustc_version="$(rustc --version)"
+if [[ -n "$pinned" ]]; then
+  if [[ "$(command -v rustc)" != "$pinned_rustc" ]]; then
+    die "rustc resolves to $(command -v rustc), not the pinned $pinned ($pinned_rustc) — a shim earlier on PATH is overriding it"
+  fi
+  pinned_version="${pinned%%-*}"   # 1.98.0 out of 1.98.0-x86_64-unknown-linux-gnu
+  case "$pinned_version" in
+    [0-9]*)
+      if [[ "$rustc_version" != "rustc $pinned_version"* ]]; then
+        die "rustc answers '$rustc_version', but rust-toolchain.toml pins $pinned"
+      fi
+      ;;
+  esac
+fi
+ok "toolchain $rustc_version"
+if [[ -n "$pinned" ]]; then
+  printf '   export PATH=%s:$PATH   # keep the pinned toolchain in this shell\n' "$(dirname "$pinned_rustc")"
+fi
 
 git config core.symlinks true             # AGENTS.md -> CLAUDE.md
 mkdir -p tmp
