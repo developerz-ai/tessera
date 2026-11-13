@@ -1,0 +1,11 @@
+module todo_decrement @1;
+// decrement assignment: place -= expr
+type Task = { id: Id<Task>, done: Int, count: Int, total: Int };
+state tasks: Table<Task> key id;
+rule drop(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  tasks[id].done -= 1;
+}
+law counts_below_total: forall t in tasks. t.count <= t.total;
+fixture task_12: Id<Task> = #12 : Id<Task>;
+example drop(task_12) fails NotFound;

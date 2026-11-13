@@ -62,7 +62,10 @@ if [[ "$call" == "${SCRIPT_FAIL:-}" ]]; then
     printf 'injected failure: %s\n' "$call" >&2
     exit 42
 fi
-if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
+if [[ "${0##*/}" == rustc ]]; then printf 'rustc %s\n' "${STUB_RUSTC_VERSION:-stub}"; fi
+if [[ "${0##*/}" == rustup && "${1:-}" == which && -n "${STUB_RUSTUP_WHICH:-}" ]]; then
+  printf '%s\n' "$STUB_RUSTUP_WHICH"
+fi
 "#,
                 )
                 .unwrap();
@@ -71,15 +74,50 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
             Self { root }
         }
 
+        /// Pin `channel` in the sandbox root and give rustup a rustc to answer
+        /// `which --toolchain <channel> rustc` with. That rustc reports
+        /// `version` and lives outside the ambient PATH, so only a script that
+        /// puts the pinned toolchain first reaches it.
+        fn pin_toolchain(&self, channel: &str, version: &str) {
+            fs::write(
+                self.root.join("rust-toolchain.toml"),
+                format!("[toolchain]\nchannel = \"{channel}\"\n"),
+            )
+            .unwrap();
+            let pinned = self.root.join("pinned");
+            fs::create_dir_all(&pinned).unwrap();
+            let rustc = pinned.join("rustc");
+            fs::write(&rustc, PINNED_RUSTC_STUB.replace("{version}", version)).unwrap();
+            fs::set_permissions(&rustc, fs::Permissions::from_mode(0o755)).unwrap();
+        }
+
         fn run(&self, script: &str, fail: &str) -> Output {
+            self.run_with(script, fail, &[])
+        }
+
+        fn run_with(&self, script: &str, fail: &str, env: &[(&str, &str)]) -> Output {
             fs::write(self.root.join("calls"), "").unwrap();
-            Command::new(self.root.join("bin").join(script))
+            let mut command = Command::new(self.root.join("bin").join(script));
+            command
                 .current_dir(self.root.join("elsewhere"))
                 .env("PATH", self.root.join("tools"))
                 .env("SCRIPT_LOG", self.root.join("calls"))
-                .env("SCRIPT_FAIL", fail)
-                .output()
-                .unwrap()
+                .env("SCRIPT_FAIL", fail);
+            for (key, value) in env {
+                command.env(key, value);
+            }
+            command.output().unwrap()
+        }
+
+        /// Run a script in a sandbox whose root pins a toolchain: rustup answers
+        /// `which --toolchain <channel> rustc` with the pinned rustc.
+        fn run_pinned(&self, script: &str) -> Output {
+            let rustc = self.root.join("pinned").join("rustc");
+            self.run_with(
+                script,
+                "",
+                &[("STUB_RUSTUP_WHICH", rustc.to_str().unwrap())],
+            )
         }
 
         fn assert_calls(&self, expected: &[&str]) {
@@ -111,6 +149,16 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
         "cargo test --workspace --locked --quiet",
         "cargo xtask all",
     ];
+    /// The toolchain the scripts must select, whatever answers on PATH.
+    const PINNED_CHANNEL: &str = "1.98.0";
+    /// A rustc outside the ambient PATH: only a script that puts the pinned
+    /// toolchain first can reach it.
+    const PINNED_RUSTC_STUB: &str = r#"#!/bin/bash
+set -eu
+call="${0##*/} $*"
+printf '%s|%s\n' "$PWD" "$call" >> "$SCRIPT_LOG"
+printf 'rustc {version}\n'
+"#;
 
     #[test]
     fn scripts_setup_is_locked_root_relative_and_repeatable() {
@@ -165,6 +213,48 @@ if [[ "${0##*/}" == rustc ]]; then printf 'rustc stub\n'; fi
             let out = sandbox.run(script, "");
             assert!(out.status.success(), "{out:?}");
             sandbox.assert_calls(&[call]);
+        }
+    }
+
+    #[test]
+    fn scripts_select_the_pinned_toolchain_before_their_work() {
+        let sandbox = Sandbox::new();
+        sandbox.pin_toolchain(PINNED_CHANNEL, PINNED_CHANNEL);
+        for (script, calls) in [
+            ("check", CHECK),
+            ("fmt", &["cargo fmt --all"][..]),
+            ("dev", &["cargo run -q -p tessera -- help"][..]),
+        ] {
+            let out = sandbox.run_pinned(script);
+            assert!(out.status.success(), "{script}: {out:?}");
+            let mut expected = vec![
+                format!("rustup which --toolchain {PINNED_CHANNEL} rustc"),
+                "rustc --version".to_string(),
+            ];
+            expected.extend(calls.iter().map(ToString::to_string));
+            let expected: Vec<&str> = expected.iter().map(String::as_str).collect();
+            sandbox.assert_calls(&expected);
+        }
+    }
+
+    #[test]
+    fn scripts_refuse_a_rustc_that_answers_another_version() {
+        let sandbox = Sandbox::new();
+        sandbox.pin_toolchain(PINNED_CHANNEL, "1.96.0");
+        let which = format!("rustup which --toolchain {PINNED_CHANNEL} rustc");
+        for script in ["check", "fmt", "dev"] {
+            let out = sandbox.run_pinned(script);
+            assert_eq!(out.status.code(), Some(75), "{script}: {out:?}");
+            let stderr = String::from_utf8(out.stderr).unwrap();
+            assert!(stderr.contains(PINNED_CHANNEL), "{script}: {stderr}");
+            assert!(stderr.contains("1.96.0"), "{script}: {stderr}");
+            assert!(
+                !String::from_utf8(out.stdout).unwrap().contains("green"),
+                "{script}"
+            );
+            // Exactly the two selection calls: the script refused before it
+            // called cargo.
+            sandbox.assert_calls(&[which.as_str(), "rustc --version"]);
         }
     }
 

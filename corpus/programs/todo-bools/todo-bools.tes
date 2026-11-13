@@ -1,0 +1,19 @@
+module todo_bools @1;
+
+// Bool column and Bool guard.
+type Task = { id: Id<Task>, active: Bool, count: Int, total: Int };
+
+state tasks: Table<Task> key id;
+
+rule close(id: Id<Task>) {
+  let t = tasks[id] or fail NotFound;
+  require t.active == true or fail Closed;
+  tasks[id].active = false;
+  tasks[id].total = t.total + 1;
+}
+
+law counts_below_total: forall t in tasks. t.count <= t.total;
+
+fixture task_12: Id<Task> = #12 : Id<Task>;
+
+example close(task_12) fails NotFound;
