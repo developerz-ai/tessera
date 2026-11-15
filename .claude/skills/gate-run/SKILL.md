@@ -3,7 +3,7 @@ description: How to set up a fresh checkout and prove a change with the gate. Us
 applies: [rust]
 ---
 
-> House skill — established by dz-runner setup mode from this repo's own evidence, then owned by its maintainers. Correct it in place; setup never overwrites a skill that exists.
+> House skill — owned by this repository's maintainers, and written from this repository's own evidence. Correct it in place; setup never overwrites a skill that exists.
 
 1. On a fresh box install rustup if missing: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none`, then put `~/.cargo/bin` on PATH.
 2. Run `bin/setup` — idempotent; installs the pinned 1.98.0 toolchain, fetches deps and builds the workspace. Fail (rustup/git missing) -> install the tool it names and re-run.

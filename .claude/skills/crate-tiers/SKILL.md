@@ -3,7 +3,7 @@ description: How to add a new workspace crate under the tier rules. Use for new 
 applies: [rust]
 ---
 
-> House skill — established by dz-runner setup mode from this repo's own evidence, then owned by its maintainers. Correct it in place; setup never overwrites a skill that exists.
+> House skill — owned by this repository's maintainers, and written from this repository's own evidence. Correct it in place; setup never overwrites a skill that exists.
 
 1. Pick the tier first from the table in docs/architecture/crates.md; if the crate fits no tier, stop and fix the design — do not widen the table.
 2. Create packages/<name>/ with a Cargo.toml using workspace inheritance (copy the shape of packages/tessera-diag/Cargo.toml: `[lints] workspace = true`, `version.workspace = true`, etc.).

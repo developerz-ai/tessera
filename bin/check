@@ -44,4 +44,5 @@ step "fmt";      cargo fmt --all -- --check
 step "clippy";   cargo clippy --workspace --all-targets --locked -- -D warnings
 step "test";     cargo test --workspace --locked --quiet
 step "guards";   cargo xtask all
+step "public tree"; bash bin/check-public-tree --self-test && bash bin/check-public-tree
 printf '\n\033[0;32m✔ bin/check green\033[0m\n'
